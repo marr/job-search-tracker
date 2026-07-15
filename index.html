@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Search Tracker</title>
+<style>
+:root {
+  --bg: #f8f9fa;
+  --surface: #ffffff;
+  --text: #1a1a2e;
+  --text-muted: #6c757d;
+  --border: #e9ecef;
+  --primary: #4361ee;
+  --primary-light: #e8ecff;
+  --success: #2ec4b6;
+  --success-light: #e6f9f7;
+  --warning: #ff9f1c;
+  --warning-light: #fff3e0;
+  --danger: #e63946;
+  --danger-light: #fde8ea;
+  --gray: #868e96;
+  --gray-light: #f1f3f5;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 16px 24px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.header h1 { font-size: 1.5rem; font-weight: 700; }
+
+.header-actions { display: flex; gap: 8px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: #3651d4; }
+.btn-secondary { background: var(--gray-light); color: var(--text); }
+.btn-secondary:hover { background: #e9ecef; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #c53030; }
+
+.btn-icon {
+  padding: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+}
+.btn-icon:hover { background: var(--gray-light); }
+
+/* Weekly Progress Banner */
+.weekly-banner {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.weekly-banner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.weekly-banner h2 { font-size: 1.125rem; font-weight: 600; }
+.weekly-date { color: var(--text-muted); font-size: 0.875rem; }
+
+.progress-container { margin-bottom: 12px; }
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+}
+
+.progress-bar { display: flex; gap: 4px; height: 12px; }
+
+.progress-segment {
+  flex: 1;
+  background: var(--gray-light);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-segment.filled { background: var(--success); }
+
+.progress-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.progress-status.eligible { color: var(--success); }
+.progress-status.warning { color: var(--warning); }
+.progress-status.danger { color: var(--danger); }
+
+/* Dashboard Cards */
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.stat-card-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.stat-card-value { font-size: 2rem; font-weight: 700; }
+.stat-card-value.primary { color: var(--primary); }
+.stat-card-value.success { color: var(--success); }
+.stat-card-value.warning { color: var(--warning); }
+.stat-card-value.danger { color: var(--danger); }
+
+/* Stage Breakdown */
+.stage-breakdown {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.stage-breakdown h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.stage-bar {
+  display: flex;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.stage-bar-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+  min-width: 30px;
+}
+
+.stage-bar-segment.networking { background: var(--gray); }
+.stage-bar-segment.applied { background: var(--primary); }
+.stage-bar-segment.interviewing { background: var(--warning); }
+.stage-bar-segment.offer { background: var(--success); }
+.stage-bar-segment.nohire { background: var(--danger); }
+
+.stage-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 0.8rem;
+}
+
+.stage-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stage-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.stage-dot.networking { background: var(--gray); }
+.stage-dot.applied { background: var(--primary); }
+.stage-dot.interviewing { background: var(--warning); }
+.stage-dot.offer { background: var(--success); }
+.stage-dot.nohire { background: var(--danger); }
+
+/* Weekly History */
+.weekly-history {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.weekly-history h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.weekly-history-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.week-card {
+  flex: 0 0 auto;
+  min-width: 120px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.week-card.current { border-color: var(--primary); background: var(--primary-light); }
+.week-card.eligible { border-color: var(--success); background: var(--success-light); }
+.week-card.incomplete { border-color: var(--warning); background: var(--warning-light); }
+
+.week-card-number { font-size: 0.75rem; color: var(--text-muted); }
+.week-card-count { font-size: 1.25rem; font-weight: 700; margin: 4px 0; }
+.week-card-status { font-size: 0.75rem; }
+.week-card-status.eligible { color: var(--success); }
+.week-card-status.incomplete { color: var(--warning); }
+
+/* Tracker Section */
+.tracker {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.tracker-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.tracker-header h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-right: auto;
+}
+
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  min-width: 200px;
+}
+
+.search-input:focus { outline: none; border-color: var(--primary); }
+
+.filter-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.filter-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover { background: var(--gray-light); }
+.filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+.sort-select {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  background: var(--surface);
+}
+
+/* Table */
+.table-container { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+
+th, td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+  background: var(--gray-light);
+  position: sticky;
+  top: 0;
+}
+
+tr:hover { background: var(--gray-light); }
+tr.clickable { cursor: pointer; }
+
+.stage-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.stage-badge.networking { background: var(--gray-light); color: var(--gray); }
+.stage-badge.applied { background: var(--primary-light); color: var(--primary); }
+.stage-badge.interviewing { background: var(--warning-light); color: var(--warning); }
+.stage-badge.offer { background: var(--success-light); color: var(--success); }
+.stage-badge.nohire { background: var(--danger-light); color: var(--danger); }
+
+.role-count { font-size: 0.75rem; color: var(--text-muted); }
+
+.notes-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 { font-size: 1.125rem; font-weight: 600; }
+
+.modal-body { padding: 24px; }
+
+.form-group { margin-bottom: 16px; }
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus { outline: none; border-color: var(--primary); }
+
+.form-group textarea { min-height: 80px; resize: vertical; }
+
+.star-rating { display: flex; gap: 4px; }
+
+.star {
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--gray-light);
+  transition: color 0.2s;
+}
+
+.star.active { color: var(--warning); }
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.modal-footer-left { display: flex; gap: 8px; }
+.modal-footer-right { display: flex; gap: 8px; }
+
+/* Log Task Button */
+.log-task-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+}
+
+.log-task-btn:hover { background: #3651d4; }
+
+/* Task Log Modal */
+.task-list {
+  margin-top: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+}
+
+.task-item-delete {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 12px; }
+  
+  .header {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .dashboard { grid-template-columns: repeat(2, 1fr); }
+  
+  .tracker-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-buttons { justify-content: center; }
+  .search-input { min-width: auto; }
+  
+  th, td { padding: 8px 12px; font-size: 0.8rem; }
+  
+  .log-task-btn {
+    bottom: 16px;
+    right: 16px;
+    padding: 10px 16px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header class="header">
+    <h1>🎯 Job Search Tracker</h1>
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
+      <button class="btn btn-secondary" onclick="resetData()">🔄 Reset</button>
+    </div>
+  </header>
+
+  <!-- Weekly Progress Banner -->
+  <section class="weekly-banner">
+    <div class="weekly-banner-header">
+      <h2 id="weekly-title">Week — Loading...</h2>
+      <span class="weekly-date" id="weekly-date-range"></span>
+    </div>
+    <div class="progress-container">
+      <div class="progress-label">
+        <span id="progress-count">0/3 tasks</span>
+        <span id="progress-remaining"></span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-segment" id="seg-1"></div>
+        <div class="progress-segment" id="seg-2"></div>
+        <div class="progress-segment" id="seg-3"></div>
+      </div>
+    </div>
+    <div class="progress-status" id="progress-status"></div>
+  </section>
+
+  <!-- Dashboard Cards -->
+  <section class="dashboard">
+    <div class="stat-card">
+      <div class="stat-card-label">Total Companies</div>
+      <div class="stat-card-value primary" id="stat-total">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Active Pipeline</div>
+      <div class="stat-card-value success" id="stat-active">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Interviewing</div>
+      <div class="stat-card-value warning" id="stat-interviewing">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">No Hires</div>
+      <div class="stat-card-value danger" id="stat-nohire">0</div>
+    </div>
+  </section>
+
+  <!-- Stage Breakdown -->
+  <section class="stage-breakdown">
+    <h3>Stage Breakdown</h3>
+    <div class="stage-bar" id="stage-bar"></div>
+    <div class="stage-legend" id="stage-legend"></div>
+  </section>
+
+  <!-- Weekly History -->
+  <section class="weekly-history">
+    <h3>Weekly History (Eligibility)</h3>
+    <div class="weekly-history-list" id="weekly-history"></div>
+  </section>
+
+  <!-- Tracker Table -->
+  <section class="tracker">
+    <div class="tracker-header">
+      <h2>Company Tracker</h2>
+      <input type="text" class="search-input" placeholder="Search company or role..." id="search-input" oninput="applyFilters()">
+      <div class="filter-buttons" id="filter-buttons">
+        <button class="filter-btn active" data-stage="all" onclick="setFilter('all')">All</button>
+        <button class="filter-btn" data-stage="Networking" onclick="setFilter('Networking')">Networking</button>
+        <button class="filter-btn" data-stage="Applied" onclick="setFilter('Applied')">Applied</button>
+        <button class="filter-btn" data-stage="Interviewing" onclick="setFilter('Interviewing')">Interviewing</button>
+        <button class="filter-btn" data-stage="Offer" onclick="setFilter('Offer')">Offer</button>
+        <button class="filter-btn" data-stage="No hire" onclick="setFilter('No hire')">No Hire</button>
+      </div>
+      <select class="sort-select" id="sort-select" onchange="applyFilters()">
+        <option value="date-desc">Most Recent</option>
+        <option value="company-asc">Company A-Z</option>
+        <option value="stage-asc">Stage</option>
+      </select>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Stage</th>
+            <th>Latest Date</th>
+            <th>Roles</th>
+            <th>Primary Role</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="tracker-body"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="empty-state" style="display: none;">No companies match your search</div>
+  </section>
+
+  <footer class="footer" id="footer"></footer>
+</div>
+
+<!-- Log Task Button -->
+<button class="log-task-btn" onclick="openTaskModal()">+ Log Weekly Task</button>
+
+<!-- Entry Modal -->
+<div class="modal-overlay" id="entry-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Add Entry</h2>
+      <button class="btn-icon" onclick="closeEntryModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="entry-id">
+      <div class="form-group">
+        <label>Company *</label>
+        <input type="text" id="entry-company" required>
+      </div>
+      <div class="form-group">
+        <label>Date *</label>
+        <input type="date" id="entry-date" required>
+      </div>
+      <div class="form-group">
+        <label>Stage</label>
+        <select id="entry-stage">
+          <option value="Networking">Networking</option>
+          <option value="Applied">Applied</option>
+          <option value="Interviewing">Interviewing</option>
+          <option value="Offer">Offer</option>
+          <option value="No hire">No Hire</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Role *</label>
+        <input type="text" id="entry-role" required>
+      </div>
+      <div class="form-group">
+        <label>Score</label>
+        <div class="star-rating" id="star-rating">
+          <span class="star" data-score="1" onclick="setScore(1)">★</span>
+          <span class="star" data-score="2" onclick="setScore(2)">★</span>
+          <span class="star" data-score="3" onclick="setScore(3)">★</span>
+          <span class="star" data-score="4" onclick="setScore(4)">★</span>
+          <span class="star" data-score="5" onclick="setScore(5)">★</span>
+        </div>
+        <input type="hidden" id="entry-score" value="0">
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="entry-notes"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-left">
+        <button class="btn btn-danger" id="delete-btn" onclick="deleteEntry()" style="display: none;">Delete</button>
+      </div>
+      <div class="modal-footer-right">
+        <button class="btn btn-secondary" onclick="closeEntryModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveEntry()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Log Weekly Task</h2>
+      <button class="btn-icon" onclick="closeTaskModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Date *</label>
+        <input type="date" id="task-date" required>
+      </div>
+      <div class="form-group">
+        <label>Description *</label>
+        <input type="text" id="task-description" placeholder="e.g., Updated resume, Networking event" required>
+      </div>
+      <div class="task-list" id="task-list"></div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-left"></div>
+      <div class="modal-footer-right">
+        <button class="btn btn-secondary" onclick="closeTaskModal()">Close</button>
+        <button class="btn btn-primary" onclick="saveTask()">Add Task</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const SEED_DATA = [
+  {
+    "id": 1,
+    "company": "Suno",
+    "date": "2026-03-17",
+    "stage": "No hire",
+    "role": "EM",
+    "score": 0,
+    "notes": "",
+    "week": 12
+  },
+  {
+    "id": 2,
+    "company": "Webflow",
+    "date": "2026-03-24",
+    "stage": "No hire",
+    "role": "EM",
+    "score": 0,
+    "notes": "",
+    "week": 13
+  },
+  {
+    "id": 3,
+    "company": "Iterable",
+    "date": "2026-04-04",
+    "stage": "Applied",
+    "role": "EM",
+    "score": 0,
+    "notes": "",
+    "week": 14
+  },
+  {
+    "id": 4,
+    "company": "Coinbase",
+    "date": "2026-04-04",
+    "stage": "No hire",
+    "role": "EM",
+    "score": 0,
+    "notes": "",
+    "week": 14
+  },
+  {
+    "id": 5,
+    "company": "Snyk",
+    "date": "2026-04-10",
+    "stage": "Applied",
+    "role": "Principal Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 15
+  },
+  {
+    "id": 6,
+    "company": "Netflix",
+    "date": "2026-04-09",
+    "stage": "Applied",
+    "role": "EM - TV Product UI",
+    "score": 0,
+    "notes": "",
+    "week": 15
+  },
+  {
+    "id": 7,
+    "company": "Airbnb",
+    "date": "2026-04-05",
+    "stage": "No hire",
+    "role": "EM",
+    "score": 0,
+    "notes": "",
+    "week": 15
+  },
+  {
+    "id": 8,
+    "company": "Car Gurus",
+    "date": "2026-04-10",
+    "stage": "No hire",
+    "role": "EM",
+    "score": 0,
+    "notes": "",
+    "week": 15
+  },
+  {
+    "id": 9,
+    "company": "OpenAI",
+    "date": "2026-04-11",
+    "stage": "Applied",
+    "role": "Software Engineer, Full Stack (People Innovation)",
+    "score": 0,
+    "notes": "",
+    "week": 15
+  },
+  {
+    "id": 10,
+    "company": "Hex",
+    "date": "2026-04-13",
+    "stage": "No hire",
+    "role": "AI Research Engineer, Search and Context",
+    "score": 0,
+    "notes": "",
+    "week": 16
+  },
+  {
+    "id": 11,
+    "company": "Anduril",
+    "date": "2026-04-14",
+    "stage": "Applied",
+    "role": "Staff Software Engineer, Developer Platform",
+    "score": 0,
+    "notes": "",
+    "week": 16
+  },
+  {
+    "id": 12,
+    "company": "Microsoft",
+    "date": "2026-04-16",
+    "stage": "No hire",
+    "role": "Principal Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 16
+  },
+  {
+    "id": 13,
+    "company": "OpenAI",
+    "date": "2026-04-15",
+    "stage": "Applied",
+    "role": "Principal Software Engineer, B2B Engineering",
+    "score": 0,
+    "notes": "",
+    "week": 16
+  },
+  {
+    "id": 14,
+    "company": "LangChain",
+    "date": "2026-04-19",
+    "stage": "Applied",
+    "role": "Deployed Engineer (Boston)",
+    "score": 0,
+    "notes": "",
+    "week": 17
+  },
+  {
+    "id": 15,
+    "company": "HeyGen",
+    "date": "2026-04-21",
+    "stage": "Applied",
+    "role": "Frontend Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 17
+  },
+  {
+    "id": 16,
+    "company": "Lovable",
+    "date": "2026-04-22",
+    "stage": "No hire",
+    "role": "Forward Deployed Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 17
+  },
+  {
+    "id": 17,
+    "company": "Github",
+    "date": "2026-04-28",
+    "stage": "Applied",
+    "role": "Principal Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 18
+  },
+  {
+    "id": 18,
+    "company": "Cadence",
+    "date": "2026-04-28",
+    "stage": "No hire",
+    "role": "Principal UI Engineer (Boston, MA)",
+    "score": 0,
+    "notes": "",
+    "week": 18
+  },
+  {
+    "id": 19,
+    "company": "Intuit",
+    "date": "2026-04-28",
+    "stage": "Applied",
+    "role": "Staff Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 18
+  },
+  {
+    "id": 20,
+    "company": "Whoop",
+    "date": "2026-04-28",
+    "stage": "Applied",
+    "role": "Software Engineering Manager (AI)",
+    "score": 0,
+    "notes": "",
+    "week": 18
+  },
+  {
+    "id": 21,
+    "company": "Jellyfish",
+    "date": "2026-04-30",
+    "stage": "No hire",
+    "role": "Engineering Manager, AI Product",
+    "score": 0,
+    "notes": "",
+    "week": 18
+  },
+  {
+    "id": 22,
+    "company": "Hasbro",
+    "date": "2026-05-03",
+    "stage": "Applied",
+    "role": "Software Engineering Manager",
+    "score": 0,
+    "notes": "",
+    "week": 19
+  },
+  {
+    "id": 23,
+    "company": "Simile",
+    "date": "2026-05-05",
+    "stage": "Applied",
+    "role": "Forward Deployed Engineer - Member of Technical Staff",
+    "score": 0,
+    "notes": "",
+    "week": 19
+  },
+  {
+    "id": 24,
+    "company": "Airwallex",
+    "date": "2026-05-05",
+    "stage": "Applied",
+    "role": "Engineering Manager",
+    "score": 0,
+    "notes": "",
+    "week": 19
+  },
+  {
+    "id": 25,
+    "company": "Hi Marley",
+    "date": "2026-05-06",
+    "stage": "Applied",
+    "role": "Sr. Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 19
+  },
+  {
+    "id": 26,
+    "company": "Blitzy",
+    "date": "2026-05-08",
+    "stage": "Applied",
+    "role": "Engineering Manager, Client Solutions",
+    "score": 0,
+    "notes": "",
+    "week": 19
+  },
+  {
+    "id": 27,
+    "company": "Blitzy",
+    "date": "2026-05-13",
+    "stage": "Interviewing",
+    "role": "Engineering Manager, Client Solutions",
+    "score": 0,
+    "notes": "",
+    "week": 20
+  },
+  {
+    "id": 28,
+    "company": "Scribd",
+    "date": "2026-05-14",
+    "stage": "No hire",
+    "role": "Staff Software Engineer, AI &amp; Developer Tooling",
+    "score": 0,
+    "notes": "",
+    "week": 20
+  },
+  {
+    "id": 29,
+    "company": "Hi Marley",
+    "date": "2026-05-15",
+    "stage": "No hire",
+    "role": "Sr. Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 20
+  },
+  {
+    "id": 30,
+    "company": "Blitzy",
+    "date": "2026-05-19",
+    "stage": "Interviewing",
+    "role": "Engineering Manager, Client Solutions",
+    "score": 0,
+    "notes": "",
+    "week": 21
+  },
+  {
+    "id": 31,
+    "company": "Figma",
+    "date": "2026-04-28",
+    "stage": "Networking",
+    "role": "Manager, Software Engineering - Creation Engine",
+    "score": 0,
+    "notes": "Sent Resume to Prasant",
+    "week": 18
+  },
+  {
+    "id": 32,
+    "company": "Figma",
+    "date": "2026-05-22",
+    "stage": "Applied",
+    "role": "Software Engineer, Full Stack",
+    "score": 0,
+    "notes": "",
+    "week": 21
+  },
+  {
+    "id": 33,
+    "company": "Snorkel AI",
+    "date": "2026-05-22",
+    "stage": "Applied",
+    "role": "Contractor",
+    "score": 0,
+    "notes": "",
+    "week": 21
+  },
+  {
+    "id": 34,
+    "company": "Toast",
+    "date": "2026-05-22",
+    "stage": "No hire",
+    "role": "Staff Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 21
+  },
+  {
+    "id": 35,
+    "company": "Suno",
+    "date": "2026-05-22",
+    "stage": "No hire",
+    "role": "Staff Software Engineer, Frontend",
+    "score": 0,
+    "notes": "",
+    "week": 21
+  },
+  {
+    "id": 36,
+    "company": "Cadence.care",
+    "date": "2026-05-22",
+    "stage": "No hire",
+    "role": "Senior Software Engineer, Agentic AI",
+    "score": 0,
+    "notes": "",
+    "week": 21
+  },
+  {
+    "id": 37,
+    "company": "Axon",
+    "date": "2026-05-27",
+    "stage": "Applied",
+    "role": "Reached out to Ben S",
+    "score": 0,
+    "notes": "",
+    "week": 22
+  },
+  {
+    "id": 38,
+    "company": "Anthropic",
+    "date": "2026-05-24",
+    "stage": "No hire",
+    "role": "Engineering Manager, UI",
+    "score": 0,
+    "notes": "",
+    "week": 22
+  },
+  {
+    "id": 39,
+    "company": "Circle",
+    "date": "2026-05-26",
+    "stage": "Applied",
+    "role": "Staff Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 22
+  },
+  {
+    "id": 40,
+    "company": "Figma",
+    "date": "2026-05-26",
+    "stage": "Applied",
+    "role": "Software Engineer, Full Stack",
+    "score": 0,
+    "notes": "",
+    "week": 22
+  },
+  {
+    "id": 41,
+    "company": "Axon",
+    "date": "2026-05-27",
+    "stage": "No hire",
+    "role": "Staff Full Stack Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 22
+  },
+  {
+    "id": 42,
+    "company": "Stellar Health",
+    "date": "2026-06-02",
+    "stage": "Applied",
+    "role": "Engineering Manager",
+    "score": 0,
+    "notes": "",
+    "week": 23
+  },
+  {
+    "id": 43,
+    "company": "Yahoo!",
+    "date": "2026-05-24",
+    "stage": "Networking",
+    "role": "Principal Software Dev Engineer",
+    "score": 0,
+    "notes": "Reached out to Matt Sajban",
+    "week": 22
+  },
+  {
+    "id": 44,
+    "company": "SourceGraph",
+    "date": "2026-07-15",
+    "stage": "Networking",
+    "role": "Reached out to Matt King",
+    "score": 0,
+    "notes": "",
+    "week": 52
+  },
+  {
+    "id": 45,
+    "company": "Stellar Health",
+    "date": "2026-06-04",
+    "stage": "Interviewing",
+    "role": "Engineering Manager 2",
+    "score": 0,
+    "notes": "",
+    "week": 23
+  },
+  {
+    "id": 46,
+    "company": "Tono Health",
+    "date": "2026-06-09",
+    "stage": "Interviewing",
+    "role": "Senior Full Stack Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 24
+  },
+  {
+    "id": 47,
+    "company": "Figma",
+    "date": "2026-06-09",
+    "stage": "No hire",
+    "role": "Software Engineer, Full Stack",
+    "score": 0,
+    "notes": "",
+    "week": 24
+  },
+  {
+    "id": 48,
+    "company": "SourceGraph",
+    "date": "2026-06-10",
+    "stage": "No hire",
+    "role": "Engineering Manager",
+    "score": 0,
+    "notes": "",
+    "week": 24
+  },
+  {
+    "id": 49,
+    "company": "Klaviyo",
+    "date": "2026-06-10",
+    "stage": "Applied",
+    "role": "Engineering Manager, Customer Agent",
+    "score": 0,
+    "notes": "",
+    "week": 24
+  },
+  {
+    "id": 50,
+    "company": "LangChain",
+    "date": "2026-06-11",
+    "stage": "Applied",
+    "role": "Senior Fullstack Engineer, Growth &amp; Monetization",
+    "score": 0,
+    "notes": "",
+    "week": 24
+  },
+  {
+    "id": 51,
+    "company": "Reval (Defense)",
+    "date": "2026-06-11",
+    "stage": "Applied",
+    "role": "Frontend Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 24
+  },
+  {
+    "id": 52,
+    "company": "Citadel",
+    "date": "2026-06-16",
+    "stage": "Applied",
+    "role": "Frontend Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 25
+  },
+  {
+    "id": 53,
+    "company": "Stellar Health",
+    "date": "2026-06-16",
+    "stage": "Interviewing",
+    "role": "Engineering Manager",
+    "score": 0,
+    "notes": "",
+    "week": 25
+  },
+  {
+    "id": 54,
+    "company": "Tono Health",
+    "date": "2026-06-17",
+    "stage": "No hire",
+    "role": "Senior Full Stack Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 25
+  },
+  {
+    "id": 55,
+    "company": "Fidelity",
+    "date": "2026-06-18",
+    "stage": "Networking",
+    "role": "Principal Full Stack Engineer",
+    "score": 0,
+    "notes": "Sent resume to Binu",
+    "week": 25
+  },
+  {
+    "id": 56,
+    "company": "New Balance",
+    "date": "2026-06-19",
+    "stage": "Applied",
+    "role": "Principal Software Engineer - AI",
+    "score": 0,
+    "notes": "",
+    "week": 25
+  },
+  {
+    "id": 57,
+    "company": "Wellington",
+    "date": "2026-06-20",
+    "stage": "No hire",
+    "role": "Lead Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 25
+  },
+  {
+    "id": 58,
+    "company": "Klaviyo",
+    "date": "2026-06-22",
+    "stage": "No hire",
+    "role": "Engineering Manager",
+    "score": 0,
+    "notes": "",
+    "week": 26
+  },
+  {
+    "id": 59,
+    "company": "Fidelity",
+    "date": "2026-06-22",
+    "stage": "Applied",
+    "role": "Principal Full Stack Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 26
+  },
+  {
+    "id": 60,
+    "company": "DataDog",
+    "date": "2026-06-24",
+    "stage": "Networking",
+    "role": "Role",
+    "score": 0,
+    "notes": "Onsite visit",
+    "week": 26
+  },
+  {
+    "id": 61,
+    "company": "N8N",
+    "date": "2026-06-24",
+    "stage": "No hire",
+    "role": "Senior Product Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 26
+  },
+  {
+    "id": 62,
+    "company": "Air Space Intelligence",
+    "date": "2026-06-25",
+    "stage": "Interviewing",
+    "role": "Staff Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 26
+  },
+  {
+    "id": 63,
+    "company": "Air Space Intelligence",
+    "date": "2026-06-26",
+    "stage": "Interviewing",
+    "role": "Staff Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 26
+  },
+  {
+    "id": 64,
+    "company": "HubSpot",
+    "date": "2026-07-03",
+    "stage": "Applied",
+    "role": "Principal Software Engineer, Commerce",
+    "score": 0,
+    "notes": "",
+    "week": 27
+  },
+  {
+    "id": 65,
+    "company": "Ark",
+    "date": "2026-07-04",
+    "stage": "Applied",
+    "role": "Staff Full Stack Engineer",
+    "score": 0,
+    "notes": "https://www.linkedin.com/jobs/view/4432825422",
+    "week": 27
+  },
+  {
+    "id": 66,
+    "company": "Xometry",
+    "date": "2026-07-04",
+    "stage": "Applied",
+    "role": "Principal Software Engineer",
+    "score": 0,
+    "notes": "https://www.linkedin.com/jobs/view/4415960287",
+    "week": 27
+  },
+  {
+    "id": 67,
+    "company": "Stellar Health",
+    "date": "2026-07-06",
+    "stage": "No hire",
+    "role": "Staff Software Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 28
+  },
+  {
+    "id": 68,
+    "company": "Apartment List",
+    "date": "2026-07-11",
+    "stage": "Applied",
+    "role": "Senior Software Engineer II, Marketplace",
+    "score": 0,
+    "notes": "",
+    "week": 28
+  },
+  {
+    "id": 69,
+    "company": "Cambridge Mobile Telematics",
+    "date": "2026-07-11",
+    "stage": "No hire",
+    "role": "Principal Full Stack Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 28
+  },
+  {
+    "id": 70,
+    "company": "Airspace Intelligence",
+    "date": "2026-07-14",
+    "stage": "No hire",
+    "role": "Staff Engineer",
+    "score": 0,
+    "notes": "",
+    "week": 29
+  }
+];
+
+// App State
+let state = {
+  entries: [],
+  weeklyTasks: [],
+  filters: { stage: 'all', search: '', sort: 'date-desc' },
+  currentWeek: getISOWeekInfo(new Date())
+};
+
+// Initialize
+function init() {
+  loadData();
+  renderAll();
+}
+
+// Data Persistence
+function loadData() {
+  const saved = localStorage.getItem('job-tracker-entries');
+  const savedTasks = localStorage.getItem('job-tracker-weekly-tasks');
+  
+  if (saved) {
+    try {
+      state.entries = JSON.parse(saved);
+    } catch(e) {
+      state.entries = [...SEED_DATA];
+    }
+  } else {
+    state.entries = [...SEED_DATA];
+  }
+  
+  if (savedTasks) {
+    try {
+      state.weeklyTasks = JSON.parse(savedTasks);
+    } catch(e) {
+      state.weeklyTasks = [];
+    }
+  }
+}
+
+function saveData() {
+  localStorage.setItem('job-tracker-entries', JSON.stringify(state.entries));
+  localStorage.setItem('job-tracker-weekly-tasks', JSON.stringify(state.weeklyTasks));
+}
+
+function resetData() {
+  if (confirm('Reset all data to original spreadsheet? This cannot be undone.')) {
+    state.entries = [...SEED_DATA];
+    state.weeklyTasks = [];
+    saveData();
+    renderAll();
+  }
+}
+
+function exportData() {
+  const data = {
+    entries: state.entries,
+    weeklyTasks: state.weeklyTasks,
+    exportDate: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'job-tracker-export.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ISO Week Utilities
+function getISOWeekInfo(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+  const week1 = new Date(d.getFullYear(), 0, 4);
+  const weekNum = 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+  
+  // Get Monday of this week
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - (date.getDay() + 6) % 7);
+  
+  // Get Sunday
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  
+  return {
+    year: d.getFullYear(),
+    week: weekNum,
+    monday: monday,
+    sunday: sunday
+  };
+}
+
+function formatDate(date) {
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function getISOWeekNumber(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const info = getISOWeekInfo(d);
+  return info.week;
+}
+
+// Deduplication
+function deduplicateEntries() {
+  const groups = {};
+  
+  state.entries.forEach(entry => {
+    const key = entry.company.toLowerCase().trim();
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(entry);
+  });
+  
+  const deduped = [];
+  
+  Object.entries(groups).forEach(([key, entries]) => {
+    entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    const latestNonRejected = entries.find(e => e.stage !== 'No hire');
+    const currentStage = latestNonRejected ? latestNonRejected.stage : 'No hire';
+    const latestEntry = entries[0];
+    
+    deduped.push({
+      company: latestEntry.company,
+      stage: currentStage,
+      date: latestEntry.date,
+      roles: [...new Set(entries.map(e => e.role))].filter(Boolean),
+      primaryRole: latestEntry.role,
+      notes: latestEntry.notes,
+      entries: entries,
+      entryCount: entries.length
+    });
+  });
+  
+  return deduped;
+}
+
+// Weekly Tasks
+function getWeeklyJobTasks(weekNum) {
+  const qualifying = ['Networking', 'Applied', 'Interviewing', 'Offer'];
+  return state.entries.filter(e => {
+    const entryWeek = getISOWeekNumber(e.date);
+    return entryWeek === weekNum && qualifying.includes(e.stage);
+  });
+}
+
+function getWeeklyStandaloneTasks(weekNum) {
+  return state.weeklyTasks.filter(t => {
+    return getISOWeekNumber(t.date) === weekNum;
+  });
+}
+
+function getWeeklyTaskCount(weekNum) {
+  const jobTasks = getWeeklyJobTasks(weekNum);
+  const standaloneTasks = getWeeklyStandaloneTasks(weekNum);
+  return jobTasks.length + standaloneTasks.length;
+}
+
+// Rendering
+function renderAll() {
+  renderWeeklyProgress();
+  renderDashboard();
+  renderStageBreakdown();
+  renderWeeklyHistory();
+  renderTable();
+  renderFooter();
+}
+
+function renderWeeklyProgress() {
+  const week = state.currentWeek;
+  const count = getWeeklyTaskCount(week.week);
+  
+  document.getElementById('weekly-title').textContent = `Week ${week.week}`;
+  document.getElementById('weekly-date-range').textContent = 
+    `${formatDate(week.monday)} – ${formatDate(week.sunday)}`;
+  
+  document.getElementById('progress-count').textContent = `${count}/3 tasks`;
+  
+  // Progress segments
+  for (let i = 1; i <= 3; i++) {
+    const seg = document.getElementById(`seg-${i}`);
+    seg.classList.toggle('filled', count >= i);
+  }
+  
+  // Status message
+  const statusEl = document.getElementById('progress-status');
+  if (count >= 3) {
+    statusEl.className = 'progress-status eligible';
+    statusEl.innerHTML = '✓ Eligible — ' + count + ' tasks completed';
+  } else if (count === 2) {
+    statusEl.className = 'progress-status warning';
+    statusEl.innerHTML = '⚠ 1 more task needed';
+  } else if (count === 1) {
+    statusEl.className = 'progress-status danger';
+    statusEl.innerHTML = '⚠ 2 more tasks needed';
+  } else {
+    statusEl.className = 'progress-status danger';
+    statusEl.innerHTML = '⚠ No tasks logged this week';
+  }
+}
+
+function renderDashboard() {
+  const deduped = deduplicateEntries();
+  
+  document.getElementById('stat-total').textContent = deduped.length;
+  document.getElementById('stat-active').textContent = 
+    deduped.filter(d => d.stage !== 'No hire').length;
+  document.getElementById('stat-interviewing').textContent = 
+    deduped.filter(d => d.stage === 'Interviewing').length;
+  document.getElementById('stat-nohire').textContent = 
+    deduped.filter(d => d.stage === 'No hire').length;
+}
+
+function renderStageBreakdown() {
+  const deduped = deduplicateEntries();
+  const stages = { Networking: 0, Applied: 0, Interviewing: 0, Offer: 0, 'No hire': 0 };
+  
+  deduped.forEach(d => {
+    stages[d.stage] = (stages[d.stage] || 0) + 1;
+  });
+  
+  const total = deduped.length;
+  const barEl = document.getElementById('stage-bar');
+  const legendEl = document.getElementById('stage-legend');
+  
+  const stageClasses = {
+    'Networking': 'networking',
+    'Applied': 'applied',
+    'Interviewing': 'interviewing',
+    'Offer': 'offer',
+    'No hire': 'nohire'
+  };
+  
+  let barHTML = '';
+  let legendHTML = '';
+  
+  Object.entries(stages).forEach(([stage, count]) => {
+    if (count > 0) {
+      const pct = (count / total * 100).toFixed(1);
+      barHTML += `<div class="stage-bar-segment ${stageClasses[stage]}" style="width: ${pct}%">${count}</div>`;
+      legendHTML += `
+        <div class="stage-legend-item">
+          <div class="stage-dot ${stageClasses[stage]}"></div>
+          <span>${stage}: ${count}</span>
+        </div>`;
+    }
+  });
+  
+  barEl.innerHTML = barHTML;
+  legendEl.innerHTML = legendHTML;
+}
+
+function renderWeeklyHistory() {
+  const container = document.getElementById('weekly-history');
+  const currentWeek = state.currentWeek.week;
+  
+  // Get all weeks with data (current week + past weeks)
+  const weeksWithData = new Set();
+  state.entries.forEach(e => {
+    const week = getISOWeekNumber(e.date);
+    if (week > 0) weeksWithData.add(week);
+  });
+  state.weeklyTasks.forEach(t => {
+    const week = getISOWeekNumber(t.date);
+    if (week > 0) weeksWithData.add(week);
+  });
+  
+  // Add current week
+  weeksWithData.add(currentWeek);
+  
+  // Sort weeks descending and take last 12
+  const sortedWeeks = [...weeksWithData].sort((a, b) => b - a).slice(0, 12);
+  
+  let html = '';
+  sortedWeeks.forEach(weekNum => {
+    const count = getWeeklyTaskCount(weekNum);
+    const isCurrent = weekNum === currentWeek;
+    const isEligible = count >= 3;
+    
+    // Calculate date range for this week
+    const jan1 = new Date(state.currentWeek.year, 0, 1);
+    const weekDate = new Date(jan1);
+    weekDate.setDate(jan1.getDate() + (weekNum - 1) * 7);
+    const weekInfo = getISOWeekInfo(weekDate);
+    
+    let cardClass = 'week-card';
+    if (isCurrent) cardClass += ' current';
+    else if (isEligible) cardClass += ' eligible';
+    else cardClass += ' incomplete';
+    
+    let statusClass = isEligible ? 'eligible' : 'incomplete';
+    let statusText = isEligible ? '✓' : `${count}/3`;
+    
+    html += `
+      <div class="${cardClass}">
+        <div class="week-card-number">Wk ${weekNum}</div>
+        <div class="week-card-count">${count}</div>
+        <div class="week-card-status ${statusClass}">${statusText}</div>
+      </div>`;
+  });
+  
+  container.innerHTML = html;
+}
+
+function renderTable() {
+  const deduped = deduplicateEntries();
+  const { stage, search, sort } = state.filters;
+  
+  let filtered = deduped;
+  
+  // Stage filter
+  if (stage !== 'all') {
+    filtered = filtered.filter(d => d.stage === stage);
+  }
+  
+  // Search filter
+  if (search) {
+    const q = search.toLowerCase();
+    filtered = filtered.filter(d => 
+      d.company.toLowerCase().includes(q) ||
+      d.roles.some(r => r.toLowerCase().includes(q)) ||
+      d.primaryRole.toLowerCase().includes(q)
+    );
+  }
+  
+  // Sort
+  if (sort === 'date-desc') {
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+  } else if (sort === 'company-asc') {
+    filtered.sort((a, b) => a.company.localeCompare(b.company));
+  } else if (sort === 'stage-asc') {
+    const stageOrder = { 'Interviewing': 0, 'Offer': 1, 'Applied': 2, 'Networking': 3, 'No hire': 4 };
+    filtered.sort((a, b) => (stageOrder[a.stage] || 5) - (stageOrder[b.stage] || 5));
+  }
+  
+  const tbody = document.getElementById('tracker-body');
+  const emptyState = document.getElementById('empty-state');
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    emptyState.style.display = 'block';
+    return;
+  }
+  
+  emptyState.style.display = 'none';
+  
+  tbody.innerHTML = filtered.map(d => `
+    <tr class="clickable" onclick="editEntry('${d.company}')">
+      <td><strong>${d.company}</strong></td>
+      <td><span class="stage-badge ${d.stage.toLowerCase().replace(' ', '')}">${d.stage}</span></td>
+      <td>${d.date}</td>
+      <td>${d.roles.length > 1 ? `<span class="role-count">${d.roles.length} roles</span>` : ''}</td>
+      <td>${d.primaryRole}</td>
+      <td class="notes-cell" title="${d.notes || ''}">${d.notes || '—'}</td>
+    </tr>
+  `).join('');
+}
+
+function renderFooter() {
+  document.getElementById('footer').textContent = 
+    `Job Search Tracker • ${state.entries.length} entries • Last updated: ${new Date().toLocaleDateString()}`;
+}
+
+// Filters
+function setFilter(newStage) {
+  state.filters.stage = newStage;
+  
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.stage === newStage);
+  });
+  
+  renderTable();
+}
+
+function applyFilters() {
+  state.filters.search = document.getElementById('search-input').value;
+  state.filters.sort = document.getElementById('sort-select').value;
+  renderTable();
+}
+
+// Entry CRUD
+function openEntryModal(entry = null) {
+  const modal = document.getElementById('entry-modal');
+  const title = document.getElementById('modal-title');
+  const deleteBtn = document.getElementById('delete-btn');
+  
+  if (entry) {
+    title.textContent = 'Edit Entry';
+    deleteBtn.style.display = 'block';
+    document.getElementById('entry-id').value = entry.id;
+    document.getElementById('entry-company').value = entry.company;
+    document.getElementById('entry-date').value = entry.date;
+    document.getElementById('entry-stage').value = entry.stage;
+    document.getElementById('entry-role').value = entry.role;
+    document.getElementById('entry-score').value = entry.score;
+    document.getElementById('entry-notes').value = entry.notes || '';
+    setScore(entry.score);
+  } else {
+    title.textContent = 'Add Entry';
+    deleteBtn.style.display = 'none';
+    document.getElementById('entry-id').value = '';
+    document.getElementById('entry-company').value = '';
+    document.getElementById('entry-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('entry-stage').value = 'Applied';
+    document.getElementById('entry-role').value = '';
+    document.getElementById('entry-score').value = '0';
+    document.getElementById('entry-notes').value = '';
+    setScore(0);
+  }
+  
+  modal.classList.add('active');
+}
+
+function closeEntryModal() {
+  document.getElementById('entry-modal').classList.remove('active');
+}
+
+function editEntry(company) {
+  const companyEntries = state.entries.filter(e => 
+    e.company.toLowerCase() === company.toLowerCase()
+  );
+  
+  if (companyEntries.length === 1) {
+    openEntryModal(companyEntries[0]);
+  } else {
+    // Show most recent entry
+    companyEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    openEntryModal(companyEntries[0]);
+  }
+}
+
+function saveEntry() {
+  const id = document.getElementById('entry-id').value;
+  const company = document.getElementById('entry-company').value.trim();
+  const date = document.getElementById('entry-date').value;
+  const stage = document.getElementById('entry-stage').value;
+  const role = document.getElementById('entry-role').value.trim();
+  const score = parseInt(document.getElementById('entry-score').value) || 0;
+  const notes = document.getElementById('entry-notes').value.trim();
+  
+  if (!company || !date || !role) {
+    alert('Please fill in required fields (Company, Date, Role)');
+    return;
+  }
+  
+  if (id) {
+    // Edit existing
+    const entry = state.entries.find(e => e.id === parseInt(id));
+    if (entry) {
+      entry.company = company;
+      entry.date = date;
+      entry.stage = stage;
+      entry.role = role;
+      entry.score = score;
+      entry.notes = notes;
+      entry.week = getISOWeekNumber(date);
+    }
+  } else {
+    // Add new
+    const newId = Math.max(0, ...state.entries.map(e => e.id)) + 1;
+    state.entries.push({
+      id: newId,
+      company,
+      date,
+      stage,
+      role,
+      score,
+      notes,
+      week: getISOWeekNumber(date)
+    });
+  }
+  
+  saveData();
+  closeEntryModal();
+  renderAll();
+}
+
+function deleteEntry() {
+  const id = document.getElementById('entry-id').value;
+  if (!id) return;
+  
+  if (confirm('Delete this entry?')) {
+    state.entries = state.entries.filter(e => e.id !== parseInt(id));
+    saveData();
+    closeEntryModal();
+    renderAll();
+  }
+}
+
+function setScore(score) {
+  document.getElementById('entry-score').value = score;
+  document.querySelectorAll('.star').forEach(star => {
+    star.classList.toggle('active', parseInt(star.dataset.score) <= score);
+  });
+}
+
+// Task Modal
+function openTaskModal() {
+  const modal = document.getElementById('task-modal');
+  document.getElementById('task-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('task-description').value = '';
+  renderTaskList();
+  modal.classList.add('active');
+}
+
+function closeTaskModal() {
+  document.getElementById('task-modal').classList.remove('active');
+}
+
+function saveTask() {
+  const date = document.getElementById('task-date').value;
+  const description = document.getElementById('task-description').value.trim();
+  
+  if (!date || !description) {
+    alert('Please fill in date and description');
+    return;
+  }
+  
+  const newId = Math.max(0, ...state.weeklyTasks.map(t => t.id || 0), ...state.entries.map(e => e.id)) + 1;
+  state.weeklyTasks.push({
+    id: newId,
+    date,
+    description
+  });
+  
+  saveData();
+  document.getElementById('task-description').value = '';
+  renderTaskList();
+  renderAll();
+}
+
+function deleteTask(id) {
+  state.weeklyTasks = state.weeklyTasks.filter(t => t.id !== id);
+  saveData();
+  renderTaskList();
+  renderAll();
+}
+
+function renderTaskList() {
+  const container = document.getElementById('task-list');
+  const currentWeek = state.currentWeek.week;
+  
+  // Get standalone tasks for current week
+  const currentWeekTasks = getWeeklyStandaloneTasks(currentWeek);
+  
+  if (currentWeekTasks.length === 0) {
+    container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.875rem;">No standalone tasks this week</div>';
+    return;
+  }
+  
+  container.innerHTML = currentWeekTasks.map(t => `
+    <div class="task-item">
+      <span>${t.description} — ${t.date}</span>
+      <button class="task-item-delete" onclick="deleteTask(${t.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeEntryModal();
+    closeTaskModal();
+  }
+});
+
+// Click outside modal to close
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.classList.remove('active');
+    }
+  });
+});
+
+
+init();
+</script>
+</body>
+</html>
