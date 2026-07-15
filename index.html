@@ -1689,6 +1689,13 @@ function getWeeklyTaskCount(weekNum) {
   return jobTasks.length + standaloneTasks.length;
 }
 
+function getWeeklyAllEntries(weekNum) {
+  // Get ALL entries for a week (not just qualifying ones)
+  return state.entries.filter(e => {
+    return getISOWeekNumber(e.date) === weekNum;
+  });
+}
+
 // Rendering
 function renderAll() {
   renderWeeklyProgress();
@@ -1806,9 +1813,11 @@ function renderWeeklyHistory() {
   
   let html = '';
   sortedWeeks.forEach(weekNum => {
-    const count = getWeeklyTaskCount(weekNum);
+    const allEntries = getWeeklyAllEntries(weekNum);
+    const count = allEntries.length;
+    const qualifyingCount = getWeeklyTaskCount(weekNum);
     const isCurrent = weekNum === currentWeek;
-    const isEligible = count >= 3;
+    const isEligible = qualifyingCount >= 3;
     
     // Calculate date range for this week
     const jan1 = new Date(state.currentWeek.year, 0, 1);
@@ -1958,9 +1967,10 @@ function showCompanyHistory(company) {
   const stageEl = document.getElementById('history-current-stage');
   const entriesEl = document.getElementById('history-entries');
   
-  // Get all entries for this company
+  // Get all entries for this company using normalized name matching
+  const normalizedTarget = normalizeCompanyName(company);
   const companyEntries = state.entries
-    .filter(e => e.company.toLowerCase() === company.toLowerCase())
+    .filter(e => normalizeCompanyName(e.company) === normalizedTarget)
     .sort((a, b) => new Date(b.date) - new Date(a.date));
   
   if (companyEntries.length === 0) {
