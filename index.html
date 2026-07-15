@@ -25,6 +25,7 @@
   --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
   --radius: 12px;
   --radius-sm: 8px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -343,7 +344,8 @@ body {
   position: absolute;
   top: calc(100% + 4px);
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scaleY(0.95);
+  transform-origin: top center;
   z-index: 200;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -351,16 +353,18 @@ body {
   box-shadow: var(--shadow-lg);
   min-width: 320px;
   max-width: 420px;
-  max-height: 0;
+  max-height: 350px;
   opacity: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.2s ease;
+  pointer-events: none;
+  transition: transform 200ms var(--ease-out), opacity 200ms ease-out;
 }
 
 .week-detail-panel.expanded {
-  max-height: 350px;
+  transform: translateX(-50%) scaleY(1);
   opacity: 1;
   overflow-y: auto;
+  pointer-events: auto;
 }
 
 .week-detail-header {
@@ -1296,6 +1300,7 @@ function renderWeeklyHistory() {
   const container = document.getElementById('weekly-history');
   const currentWeek = state.currentWeek.week;
   const apps = getAllApplications();
+  const previousExpandedWeek = expandedWeek;
 
   const weeksWithData = new Set();
   apps.forEach(a => { const w = getISOWeekNumber(a.date); if (w > 0) weeksWithData.add(w); });
@@ -1311,14 +1316,15 @@ function renderWeeklyHistory() {
     const isPast = weekNum < currentWeek;
     const statusClass = isEligible ? 'week-complete' : isCurrent ? 'week-in-progress' : 'week-missed';
     const statusText = isEligible ? 'Complete' : isCurrent ? 'In progress' : isPast ? 'Missed' : 'No tasks';
+    const isExpanded = weekNum === previousExpandedWeek;
 
     return `<div class="week-card-wrapper" data-week="${weekNum}">
-      <div class="week-card ${statusClass}" data-week="${weekNum}" onclick="toggleWeekExpand(this, ${weekNum})" onmouseenter="showWeekTooltip(event, ${weekNum})" onmousemove="moveWeekTooltip(event)" onmouseleave="hideWeekTooltip()">
+      <div class="week-card ${statusClass} ${isExpanded ? 'expanded' : ''}" data-week="${weekNum}" onclick="toggleWeekExpand(this, ${weekNum})" onmouseenter="showWeekTooltip(event, ${weekNum})" onmousemove="moveWeekTooltip(event)" onmouseleave="hideWeekTooltip()">
         <div class="week-card-number">Wk ${weekNum}</div>
         <div class="week-card-count">${count}/3 items</div>
         <div class="week-card-status ${statusClass}"><span class="week-status-dot ${statusClass}"></span>${statusText}</div>
       </div>
-      <div class="week-detail-panel" id="week-detail-${weekNum}"></div>
+      <div class="week-detail-panel ${isExpanded ? 'expanded' : ''}" id="week-detail-${weekNum}">${isExpanded ? renderWeekDetailContent(weekNum) : ''}</div>
     </div>`;
   }).join('');
 }
@@ -1369,6 +1375,7 @@ function toggleWeekExpand(cardEl, weekNum) {
   const panel = document.getElementById('week-detail-' + weekNum);
   if (!panel) return;
 
+  // If clicking the already-expanded week, collapse it
   if (expandedWeek === weekNum) {
     panel.classList.remove('expanded');
     cardEl.classList.remove('expanded');
@@ -1376,14 +1383,21 @@ function toggleWeekExpand(cardEl, weekNum) {
     return;
   }
 
+  // Collapse previously expanded week
   if (expandedWeek !== null) {
     const prev = document.getElementById('week-detail-' + expandedWeek);
     const prevCard = document.querySelector(`.week-card[data-week="${expandedWeek}"]`);
-    if (prev) prev.classList.remove('expanded');
+    if (prev) {
+      prev.classList.remove('expanded');
+      prev.innerHTML = ''; // Clear content after collapse animation
+    }
     if (prevCard) prevCard.classList.remove('expanded');
   }
 
-  panel.innerHTML = renderWeekDetailContent(weekNum);
+  // Expand new week - populate content if not already there
+  if (!panel.innerHTML.trim()) {
+    panel.innerHTML = renderWeekDetailContent(weekNum);
+  }
   panel.classList.add('expanded');
   cardEl.classList.add('expanded');
   expandedWeek = weekNum;
