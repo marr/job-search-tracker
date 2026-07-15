@@ -1544,11 +1544,21 @@ function getISOWeekNumber(dateStr) {
 }
 
 // Deduplication
+function normalizeCompanyName(name) {
+  // Convert to lowercase, remove punctuation except hyphens
+  let normalized = name.toLowerCase().trim();
+  
+  // Remove spaces and punctuation to create a single token
+  normalized = normalized.replace(/[^a-z0-9]/g, '');
+  
+  return normalized;
+}
+
 function deduplicateEntries() {
   const groups = {};
   
   state.entries.forEach(entry => {
-    const key = entry.company.toLowerCase().trim();
+    const key = normalizeCompanyName(entry.company);
     if (!groups[key]) groups[key] = [];
     groups[key].push(entry);
   });
@@ -1562,8 +1572,15 @@ function deduplicateEntries() {
     const currentStage = latestNonRejected ? latestNonRejected.stage : 'No hire';
     const latestEntry = entries[0];
     
+    // Pick the most commonly used company name variant
+    const nameCounts = {};
+    entries.forEach(e => {
+      nameCounts[e.company] = (nameCounts[e.company] || 0) + 1;
+    });
+    const bestName = Object.entries(nameCounts).sort((a, b) => b[1] - a[1])[0][0];
+    
     deduped.push({
-      company: latestEntry.company,
+      company: bestName,
       stage: currentStage,
       date: latestEntry.date,
       roles: [...new Set(entries.map(e => e.role))].filter(Boolean),
