@@ -595,7 +595,6 @@ tr.clickable { cursor: pointer; }
     <h1>🎯 Job Search Tracker</h1>
     <div class="header-actions">
       <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
-      <button class="btn btn-secondary" onclick="resetData()">🔄 Reset</button>
     </div>
   </header>
 
@@ -1579,15 +1578,22 @@ function exportData() {
 
 // ISO Week Utilities
 function getISOWeekInfo(date) {
+  // Standard ISO 8601 week number calculation
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
-  const week1 = new Date(d.getFullYear(), 0, 4);
-  const weekNum = 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+  
+  // Set to nearest Thursday (current date + 4 - current day number, make Sunday 7)
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+  
+  // Year start
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  
+  // Calculate full weeks between nearest Thursday and year start
+  const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   
   // Get Monday of this week
   const monday = new Date(date);
-  monday.setDate(date.getDate() - (date.getDay() + 6) % 7);
+  monday.setDate(date.getDate() - (date.getDay() || 7) + 1);
   
   // Get Sunday
   const sunday = new Date(monday);
