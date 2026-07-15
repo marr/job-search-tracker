@@ -505,6 +505,51 @@ tr.clickable { cursor: pointer; }
   padding: 4px;
 }
 
+/* Company History Modal */
+.history-entries {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.history-entry {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.history-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.history-entry-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.history-entry-role {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.history-entry-notes {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.history-entry-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
 /* Footer */
 .footer {
   text-align: center;
@@ -737,6 +782,29 @@ tr.clickable { cursor: pointer; }
   </div>
 </div>
 
+<!-- Company History Modal -->
+<div class="modal-overlay" id="history-modal">
+  <div class="modal" style="max-width: 600px;">
+    <div class="modal-header">
+      <div>
+        <h2 id="history-company-name">Company</h2>
+        <div id="history-current-stage" style="margin-top: 4px;"></div>
+      </div>
+      <button class="btn-icon" onclick="closeHistoryModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="history-entries" id="history-entries"></div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-left">
+        <button class="btn btn-secondary" onclick="addEntryForCompany()">+ Add Entry</button>
+      </div>
+      <div class="modal-footer-right">
+        <button class="btn btn-secondary" onclick="closeHistoryModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 const SEED_DATA = [
@@ -1804,7 +1872,7 @@ function renderTable() {
   emptyState.style.display = 'none';
   
   tbody.innerHTML = filtered.map(d => `
-    <tr class="clickable" onclick="editEntry('${d.company}')">
+    <tr class="clickable" onclick="showCompanyHistory('${d.company}')">
       <td><strong>${d.company}</strong></td>
       <td><span class="stage-badge ${d.stage.toLowerCase().replace(' ', '')}">${d.stage}</span></td>
       <td>${d.date}</td>
@@ -1872,6 +1940,87 @@ function openEntryModal(entry = null) {
 
 function closeEntryModal() {
   document.getElementById('entry-modal').classList.remove('active');
+}
+
+// Company History Modal
+let currentHistoryCompany = null;
+
+function showCompanyHistory(company) {
+  currentHistoryCompany = company;
+  const modal = document.getElementById('history-modal');
+  const nameEl = document.getElementById('history-company-name');
+  const stageEl = document.getElementById('history-current-stage');
+  const entriesEl = document.getElementById('history-entries');
+  
+  // Get all entries for this company
+  const companyEntries = state.entries
+    .filter(e => e.company.toLowerCase() === company.toLowerCase())
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  if (companyEntries.length === 0) {
+    modal.classList.remove('active');
+    return;
+  }
+  
+  // Determine current stage
+  const latestNonRejected = companyEntries.find(e => e.stage !== 'No hire');
+  const currentStage = latestNonRejected ? latestNonRejected.stage : 'No hire';
+  
+  nameEl.textContent = companyEntries[0].company;
+  stageEl.innerHTML = `<span class="stage-badge ${currentStage.toLowerCase().replace(' ', '')}">${currentStage}</span>`;
+  
+  // Render entries
+  entriesEl.innerHTML = companyEntries.map(entry => `
+    <div class="history-entry">
+      <div class="history-entry-header">
+        <span class="stage-badge ${entry.stage.toLowerCase().replace(' ', '')}">${entry.stage}</span>
+        <span class="history-entry-date">${entry.date}</span>
+      </div>
+      <div class="history-entry-role">${entry.role || '—'}</div>
+      ${entry.notes ? `<div class="history-entry-notes">${entry.notes}</div>` : ''}
+      <div class="history-entry-actions">
+        <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px;" onclick="editSpecificEntry(${entry.id})">Edit</button>
+        <button class="btn btn-danger" style="font-size: 0.75rem; padding: 4px 8px;" onclick="deleteSpecificEntry(${entry.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+  
+  modal.classList.add('active');
+}
+
+function closeHistoryModal() {
+  document.getElementById('history-modal').classList.remove('active');
+  currentHistoryCompany = null;
+}
+
+function addEntryForCompany() {
+  const companyName = currentHistoryCompany;
+  closeHistoryModal();
+  // Pre-fill company name if we were viewing one
+  openEntryModal();
+  if (companyName) {
+    document.getElementById('entry-company').value = companyName;
+  }
+}
+
+function editSpecificEntry(id) {
+  const entry = state.entries.find(e => e.id === id);
+  if (entry) {
+    closeHistoryModal();
+    openEntryModal(entry);
+  }
+}
+
+function deleteSpecificEntry(id) {
+  if (confirm('Delete this entry?')) {
+    state.entries = state.entries.filter(e => e.id !== id);
+    saveData();
+    // Refresh the history modal if still open
+    if (currentHistoryCompany) {
+      showCompanyHistory(currentHistoryCompany);
+    }
+    renderAll();
+  }
 }
 
 function editEntry(company) {
