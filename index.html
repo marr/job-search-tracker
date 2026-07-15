@@ -1199,7 +1199,9 @@ async function loadData() {
 }
 
 function getAllApplications() {
-  return state.companyView.flatMap(cv => cv.applications);
+  return state.companyView.flatMap(cv => 
+    cv.applications.map(a => ({ ...a, companyName: cv.company.name }))
+  );
 }
 
 // ============================================================
