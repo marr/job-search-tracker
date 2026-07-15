@@ -251,24 +251,201 @@ body {
   padding-bottom: 8px;
 }
 
-.week-card {
+.week-card-wrapper {
   flex: 0 0 auto;
+  min-width: 120px;
+  position: relative;
+}
+
+.week-card {
   min-width: 120px;
   padding: 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
-.week-card.current { border-color: var(--primary); background: var(--primary-light); }
-.week-card.eligible { border-color: var(--success); background: var(--success-light); }
-.week-card.incomplete { border-color: var(--warning); background: var(--warning-light); }
+.week-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Color states: blue=complete, amber=in-progress, gray=missed */
+.week-card.week-complete { border-color: #3b82f6; background: #eff6ff; }
+.week-card.week-in-progress { border-color: var(--warning); background: var(--warning-light); }
+.week-card.week-missed { border-color: var(--gray); background: var(--gray-light); }
 
 .week-card-number { font-size: 0.75rem; color: var(--text-muted); }
-.week-card-count { font-size: 1.25rem; font-weight: 700; margin: 4px 0; }
-.week-card-status { font-size: 0.75rem; }
-.week-card-status.eligible { color: var(--success); }
-.week-card-status.incomplete { color: var(--warning); }
+.week-card-count { font-size: 1.125rem; font-weight: 700; margin: 4px 0; }
+.week-card-status { font-size: 0.75rem; font-weight: 500; }
+.week-card-status.week-complete { color: #3b82f6; }
+.week-card-status.week-in-progress { color: var(--warning); }
+.week-card-status.week-missed { color: var(--gray); }
+
+/* Status dot */
+.week-status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.week-status-dot.week-complete { background: #3b82f6; }
+.week-status-dot.week-in-progress { background: var(--warning); }
+.week-status-dot.week-missed { background: var(--gray); }
+
+/* Hover Tooltip */
+.week-tooltip {
+  position: fixed;
+  z-index: 1000;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  max-width: 280px;
+}
+
+.week-tooltip.visible { opacity: 1; }
+
+.week-tooltip-header {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.week-tooltip-count {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.week-tooltip-status {
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.week-tooltip-status.week-complete { color: #3b82f6; }
+.week-tooltip-status.week-in-progress { color: var(--warning); }
+.week-tooltip-status.week-missed { color: var(--gray); }
+
+/* Expanded Week Detail */
+.week-detail-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  min-width: 320px;
+  max-width: 420px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+.week-detail-panel.expanded {
+  max-height: 350px;
+  opacity: 1;
+  overflow-y: auto;
+}
+
+.week-detail-header {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+
+.week-task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.week-task-item:last-child { border-bottom: none; }
+
+.week-task-icon { flex-shrink: 0; font-size: 0.875rem; line-height: 1.4; }
+
+.week-task-info { flex: 1; min-width: 0; }
+
+.week-task-company {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.week-task-role {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.week-task-stage {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.week-task-stage.networking { background: #e9ecef; color: var(--gray); }
+.week-task-stage.applied { background: var(--primary-light); color: var(--primary); }
+.week-task-stage.interviewing { background: var(--warning-light); color: #e67700; }
+.week-task-stage.offer { background: var(--success-light); color: var(--success); }
+.week-task-stage.nohire { background: var(--danger-light); color: var(--danger); }
+
+.week-task-date { font-size: 0.6875rem; color: var(--text-muted); margin-top: 2px; }
+
+.week-standalone-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.week-standalone-item:last-child { border-bottom: none; }
+
+.week-standalone-desc { flex: 1; }
+
+.week-standalone-date { font-size: 0.6875rem; color: var(--text-muted); flex-shrink: 0; }
+
+.week-no-tasks {
+  padding: 12px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 640px) {
+  .weekly-history-list { gap: 6px; }
+  .week-card { min-width: 100px; padding: 10px; }
+  .week-detail-panel { min-width: 260px; max-width: 320px; }
+}
 
 /* Tracker Section */
 .tracker {
@@ -651,6 +828,13 @@ tr.clickable { cursor: pointer; }
     <div class="weekly-history-list" id="weekly-history"></div>
   </section>
 
+  <!-- Week Tooltip (global, repositioned on hover) -->
+  <div class="week-tooltip" id="week-tooltip">
+    <div class="week-tooltip-header" id="tooltip-header"></div>
+    <div class="week-tooltip-count" id="tooltip-count"></div>
+    <div class="week-tooltip-status" id="tooltip-status"></div>
+  </div>
+
   <!-- Tracker Table -->
   <section class="tracker">
     <div class="tracker-header">
@@ -722,8 +906,9 @@ tr.clickable { cursor: pointer; }
         </select>
       </div>
       <div class="form-group">
-        <label>Role *</label>
-        <input type="text" id="entry-role" required>
+        <label>Role <span id="role-required" style="color: var(--danger);">*</span></label>
+        <input type="text" id="entry-role" list="role-suggestions">
+        <datalist id="role-suggestions"></datalist>
       </div>
       <div class="form-group">
         <label>Score</label>
@@ -806,815 +991,183 @@ tr.clickable { cursor: pointer; }
 </div>
 
 <script>
-const SEED_DATA = [
-  {
-    "id": 1,
-    "company": "Suno",
-    "date": "2026-03-17",
-    "stage": "No hire",
-    "role": "EM",
-    "score": 0,
-    "notes": "",
-    "week": 12
-  },
-  {
-    "id": 2,
-    "company": "Webflow",
-    "date": "2026-03-24",
-    "stage": "No hire",
-    "role": "EM",
-    "score": 0,
-    "notes": "",
-    "week": 13
-  },
-  {
-    "id": 3,
-    "company": "Iterable",
-    "date": "2026-04-04",
-    "stage": "Applied",
-    "role": "EM",
-    "score": 0,
-    "notes": "",
-    "week": 14
-  },
-  {
-    "id": 4,
-    "company": "Coinbase",
-    "date": "2026-04-04",
-    "stage": "No hire",
-    "role": "EM",
-    "score": 0,
-    "notes": "",
-    "week": 14
-  },
-  {
-    "id": 5,
-    "company": "Snyk",
-    "date": "2026-04-10",
-    "stage": "Applied",
-    "role": "Principal Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 15
-  },
-  {
-    "id": 6,
-    "company": "Netflix",
-    "date": "2026-04-09",
-    "stage": "Applied",
-    "role": "EM - TV Product UI",
-    "score": 0,
-    "notes": "",
-    "week": 15
-  },
-  {
-    "id": 7,
-    "company": "Airbnb",
-    "date": "2026-04-05",
-    "stage": "No hire",
-    "role": "EM",
-    "score": 0,
-    "notes": "",
-    "week": 15
-  },
-  {
-    "id": 8,
-    "company": "Car Gurus",
-    "date": "2026-04-10",
-    "stage": "No hire",
-    "role": "EM",
-    "score": 0,
-    "notes": "",
-    "week": 15
-  },
-  {
-    "id": 9,
-    "company": "OpenAI",
-    "date": "2026-04-11",
-    "stage": "Applied",
-    "role": "Software Engineer, Full Stack (People Innovation)",
-    "score": 0,
-    "notes": "",
-    "week": 15
-  },
-  {
-    "id": 10,
-    "company": "Hex",
-    "date": "2026-04-13",
-    "stage": "No hire",
-    "role": "AI Research Engineer, Search and Context",
-    "score": 0,
-    "notes": "",
-    "week": 16
-  },
-  {
-    "id": 11,
-    "company": "Anduril",
-    "date": "2026-04-14",
-    "stage": "Applied",
-    "role": "Staff Software Engineer, Developer Platform",
-    "score": 0,
-    "notes": "",
-    "week": 16
-  },
-  {
-    "id": 12,
-    "company": "Microsoft",
-    "date": "2026-04-16",
-    "stage": "No hire",
-    "role": "Principal Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 16
-  },
-  {
-    "id": 13,
-    "company": "OpenAI",
-    "date": "2026-04-15",
-    "stage": "Applied",
-    "role": "Principal Software Engineer, B2B Engineering",
-    "score": 0,
-    "notes": "",
-    "week": 16
-  },
-  {
-    "id": 14,
-    "company": "LangChain",
-    "date": "2026-04-19",
-    "stage": "Applied",
-    "role": "Deployed Engineer (Boston)",
-    "score": 0,
-    "notes": "",
-    "week": 17
-  },
-  {
-    "id": 15,
-    "company": "HeyGen",
-    "date": "2026-04-21",
-    "stage": "Applied",
-    "role": "Frontend Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 17
-  },
-  {
-    "id": 16,
-    "company": "Lovable",
-    "date": "2026-04-22",
-    "stage": "No hire",
-    "role": "Forward Deployed Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 17
-  },
-  {
-    "id": 17,
-    "company": "Github",
-    "date": "2026-04-28",
-    "stage": "Applied",
-    "role": "Principal Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 18
-  },
-  {
-    "id": 18,
-    "company": "Cadence",
-    "date": "2026-04-28",
-    "stage": "No hire",
-    "role": "Principal UI Engineer (Boston, MA)",
-    "score": 0,
-    "notes": "",
-    "week": 18
-  },
-  {
-    "id": 19,
-    "company": "Intuit",
-    "date": "2026-04-28",
-    "stage": "Applied",
-    "role": "Staff Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 18
-  },
-  {
-    "id": 20,
-    "company": "Whoop",
-    "date": "2026-04-28",
-    "stage": "Applied",
-    "role": "Software Engineering Manager (AI)",
-    "score": 0,
-    "notes": "",
-    "week": 18
-  },
-  {
-    "id": 21,
-    "company": "Jellyfish",
-    "date": "2026-04-30",
-    "stage": "No hire",
-    "role": "Engineering Manager, AI Product",
-    "score": 0,
-    "notes": "",
-    "week": 18
-  },
-  {
-    "id": 22,
-    "company": "Hasbro",
-    "date": "2026-05-03",
-    "stage": "Applied",
-    "role": "Software Engineering Manager",
-    "score": 0,
-    "notes": "",
-    "week": 19
-  },
-  {
-    "id": 23,
-    "company": "Simile",
-    "date": "2026-05-05",
-    "stage": "Applied",
-    "role": "Forward Deployed Engineer - Member of Technical Staff",
-    "score": 0,
-    "notes": "",
-    "week": 19
-  },
-  {
-    "id": 24,
-    "company": "Airwallex",
-    "date": "2026-05-05",
-    "stage": "Applied",
-    "role": "Engineering Manager",
-    "score": 0,
-    "notes": "",
-    "week": 19
-  },
-  {
-    "id": 25,
-    "company": "Hi Marley",
-    "date": "2026-05-06",
-    "stage": "Applied",
-    "role": "Sr. Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 19
-  },
-  {
-    "id": 26,
-    "company": "Blitzy",
-    "date": "2026-05-08",
-    "stage": "Applied",
-    "role": "Engineering Manager, Client Solutions",
-    "score": 0,
-    "notes": "",
-    "week": 19
-  },
-  {
-    "id": 27,
-    "company": "Blitzy",
-    "date": "2026-05-13",
-    "stage": "Interviewing",
-    "role": "Engineering Manager, Client Solutions",
-    "score": 0,
-    "notes": "",
-    "week": 20
-  },
-  {
-    "id": 28,
-    "company": "Scribd",
-    "date": "2026-05-14",
-    "stage": "No hire",
-    "role": "Staff Software Engineer, AI &amp; Developer Tooling",
-    "score": 0,
-    "notes": "",
-    "week": 20
-  },
-  {
-    "id": 29,
-    "company": "Hi Marley",
-    "date": "2026-05-15",
-    "stage": "No hire",
-    "role": "Sr. Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 20
-  },
-  {
-    "id": 30,
-    "company": "Blitzy",
-    "date": "2026-05-19",
-    "stage": "Interviewing",
-    "role": "Engineering Manager, Client Solutions",
-    "score": 0,
-    "notes": "",
-    "week": 21
-  },
-  {
-    "id": 31,
-    "company": "Figma",
-    "date": "2026-04-28",
-    "stage": "Networking",
-    "role": "Manager, Software Engineering - Creation Engine",
-    "score": 0,
-    "notes": "Sent Resume to Prasant",
-    "week": 18
-  },
-  {
-    "id": 32,
-    "company": "Figma",
-    "date": "2026-05-22",
-    "stage": "Applied",
-    "role": "Software Engineer, Full Stack",
-    "score": 0,
-    "notes": "",
-    "week": 21
-  },
-  {
-    "id": 33,
-    "company": "Snorkel AI",
-    "date": "2026-05-22",
-    "stage": "Applied",
-    "role": "Contractor",
-    "score": 0,
-    "notes": "",
-    "week": 21
-  },
-  {
-    "id": 34,
-    "company": "Toast",
-    "date": "2026-05-22",
-    "stage": "No hire",
-    "role": "Staff Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 21
-  },
-  {
-    "id": 35,
-    "company": "Suno",
-    "date": "2026-05-22",
-    "stage": "No hire",
-    "role": "Staff Software Engineer, Frontend",
-    "score": 0,
-    "notes": "",
-    "week": 21
-  },
-  {
-    "id": 36,
-    "company": "Cadence.care",
-    "date": "2026-05-22",
-    "stage": "No hire",
-    "role": "Senior Software Engineer, Agentic AI",
-    "score": 0,
-    "notes": "",
-    "week": 21
-  },
-  {
-    "id": 37,
-    "company": "Axon",
-    "date": "2026-05-27",
-    "stage": "Applied",
-    "role": "Reached out to Ben S",
-    "score": 0,
-    "notes": "",
-    "week": 22
-  },
-  {
-    "id": 38,
-    "company": "Anthropic",
-    "date": "2026-05-24",
-    "stage": "No hire",
-    "role": "Engineering Manager, UI",
-    "score": 0,
-    "notes": "",
-    "week": 22
-  },
-  {
-    "id": 39,
-    "company": "Circle",
-    "date": "2026-05-26",
-    "stage": "Applied",
-    "role": "Staff Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 22
-  },
-  {
-    "id": 40,
-    "company": "Figma",
-    "date": "2026-05-26",
-    "stage": "Applied",
-    "role": "Software Engineer, Full Stack",
-    "score": 0,
-    "notes": "",
-    "week": 22
-  },
-  {
-    "id": 41,
-    "company": "Axon",
-    "date": "2026-05-27",
-    "stage": "No hire",
-    "role": "Staff Full Stack Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 22
-  },
-  {
-    "id": 42,
-    "company": "Stellar Health",
-    "date": "2026-06-02",
-    "stage": "Applied",
-    "role": "Engineering Manager",
-    "score": 0,
-    "notes": "",
-    "week": 23
-  },
-  {
-    "id": 43,
-    "company": "Yahoo!",
-    "date": "2026-05-24",
-    "stage": "Networking",
-    "role": "Principal Software Dev Engineer",
-    "score": 0,
-    "notes": "Reached out to Matt Sajban",
-    "week": 22
-  },
-  {
-    "id": 44,
-    "company": "SourceGraph",
-    "date": "2026-07-15",
-    "stage": "Networking",
-    "role": "Reached out to Matt King",
-    "score": 0,
-    "notes": "",
-    "week": 52
-  },
-  {
-    "id": 45,
-    "company": "Stellar Health",
-    "date": "2026-06-04",
-    "stage": "Interviewing",
-    "role": "Engineering Manager 2",
-    "score": 0,
-    "notes": "",
-    "week": 23
-  },
-  {
-    "id": 46,
-    "company": "Tono Health",
-    "date": "2026-06-09",
-    "stage": "Interviewing",
-    "role": "Senior Full Stack Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 24
-  },
-  {
-    "id": 47,
-    "company": "Figma",
-    "date": "2026-06-09",
-    "stage": "No hire",
-    "role": "Software Engineer, Full Stack",
-    "score": 0,
-    "notes": "",
-    "week": 24
-  },
-  {
-    "id": 48,
-    "company": "SourceGraph",
-    "date": "2026-06-10",
-    "stage": "No hire",
-    "role": "Engineering Manager",
-    "score": 0,
-    "notes": "",
-    "week": 24
-  },
-  {
-    "id": 49,
-    "company": "Klaviyo",
-    "date": "2026-06-10",
-    "stage": "Applied",
-    "role": "Engineering Manager, Customer Agent",
-    "score": 0,
-    "notes": "",
-    "week": 24
-  },
-  {
-    "id": 50,
-    "company": "LangChain",
-    "date": "2026-06-11",
-    "stage": "Applied",
-    "role": "Senior Fullstack Engineer, Growth &amp; Monetization",
-    "score": 0,
-    "notes": "",
-    "week": 24
-  },
-  {
-    "id": 51,
-    "company": "Reval (Defense)",
-    "date": "2026-06-11",
-    "stage": "Applied",
-    "role": "Frontend Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 24
-  },
-  {
-    "id": 52,
-    "company": "Citadel",
-    "date": "2026-06-16",
-    "stage": "Applied",
-    "role": "Frontend Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 25
-  },
-  {
-    "id": 53,
-    "company": "Stellar Health",
-    "date": "2026-06-16",
-    "stage": "Interviewing",
-    "role": "Engineering Manager",
-    "score": 0,
-    "notes": "",
-    "week": 25
-  },
-  {
-    "id": 54,
-    "company": "Tono Health",
-    "date": "2026-06-17",
-    "stage": "No hire",
-    "role": "Senior Full Stack Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 25
-  },
-  {
-    "id": 55,
-    "company": "Fidelity",
-    "date": "2026-06-18",
-    "stage": "Networking",
-    "role": "Principal Full Stack Engineer",
-    "score": 0,
-    "notes": "Sent resume to Binu",
-    "week": 25
-  },
-  {
-    "id": 56,
-    "company": "New Balance",
-    "date": "2026-06-19",
-    "stage": "Applied",
-    "role": "Principal Software Engineer - AI",
-    "score": 0,
-    "notes": "",
-    "week": 25
-  },
-  {
-    "id": 57,
-    "company": "Wellington",
-    "date": "2026-06-20",
-    "stage": "No hire",
-    "role": "Lead Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 25
-  },
-  {
-    "id": 58,
-    "company": "Klaviyo",
-    "date": "2026-06-22",
-    "stage": "No hire",
-    "role": "Engineering Manager",
-    "score": 0,
-    "notes": "",
-    "week": 26
-  },
-  {
-    "id": 59,
-    "company": "Fidelity",
-    "date": "2026-06-22",
-    "stage": "Applied",
-    "role": "Principal Full Stack Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 26
-  },
-  {
-    "id": 60,
-    "company": "DataDog",
-    "date": "2026-06-24",
-    "stage": "Networking",
-    "role": "Role",
-    "score": 0,
-    "notes": "Onsite visit",
-    "week": 26
-  },
-  {
-    "id": 61,
-    "company": "N8N",
-    "date": "2026-06-24",
-    "stage": "No hire",
-    "role": "Senior Product Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 26
-  },
-  {
-    "id": 62,
-    "company": "Air Space Intelligence",
-    "date": "2026-06-25",
-    "stage": "Interviewing",
-    "role": "Staff Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 26
-  },
-  {
-    "id": 63,
-    "company": "Air Space Intelligence",
-    "date": "2026-06-26",
-    "stage": "Interviewing",
-    "role": "Staff Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 26
-  },
-  {
-    "id": 64,
-    "company": "HubSpot",
-    "date": "2026-07-03",
-    "stage": "Applied",
-    "role": "Principal Software Engineer, Commerce",
-    "score": 0,
-    "notes": "",
-    "week": 27
-  },
-  {
-    "id": 65,
-    "company": "Ark",
-    "date": "2026-07-04",
-    "stage": "Applied",
-    "role": "Staff Full Stack Engineer",
-    "score": 0,
-    "notes": "https://www.linkedin.com/jobs/view/4432825422",
-    "week": 27
-  },
-  {
-    "id": 66,
-    "company": "Xometry",
-    "date": "2026-07-04",
-    "stage": "Applied",
-    "role": "Principal Software Engineer",
-    "score": 0,
-    "notes": "https://www.linkedin.com/jobs/view/4415960287",
-    "week": 27
-  },
-  {
-    "id": 67,
-    "company": "Stellar Health",
-    "date": "2026-07-06",
-    "stage": "Interviewing",
-    "role": "Staff Software Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 28
-  },
-  {
-    "id": 68,
-    "company": "Apartment List",
-    "date": "2026-07-11",
-    "stage": "Applied",
-    "role": "Senior Software Engineer II, Marketplace",
-    "score": 0,
-    "notes": "",
-    "week": 28
-  },
-  {
-    "id": 69,
-    "company": "Cambridge Mobile Telematics",
-    "date": "2026-07-11",
-    "stage": "No hire",
-    "role": "Principal Full Stack Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 28
-  },
-  {
-    "id": 70,
-    "company": "Airspace Intelligence",
-    "date": "2026-07-14",
-    "stage": "Interviewing",
-    "role": "Staff Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 29
-  },
-  {
-    "id": 71,
-    "company": "Airspace Intelligence",
-    "date": "2026-07-14",
-    "stage": "No hire",
-    "role": "Staff Engineer",
-    "score": 0,
-    "notes": "",
-    "week": 29
-  }
-];
+// ============================================================
+// IndexedDB Data Layer
+// ============================================================
+const DB_NAME = 'job-tracker';
+const DB_VERSION = 1;
 
+let db = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      
+      if (!db.objectStoreNames.contains('companies')) {
+        const companies = db.createObjectStore('companies', { keyPath: 'id', autoIncrement: true });
+        companies.createIndex('name', 'name', { unique: true });
+      }
+      
+      if (!db.objectStoreNames.contains('applications')) {
+        const applications = db.createObjectStore('applications', { keyPath: 'id', autoIncrement: true });
+        applications.createIndex('companyId', 'companyId', { unique: false });
+        applications.createIndex('date', 'date', { unique: false });
+      }
+      
+      if (!db.objectStoreNames.contains('weeklyTasks')) {
+        db.createObjectStore('weeklyTasks', { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    
+    request.onsuccess = (e) => { db = e.target.result; resolve(db); };
+    request.onerror = (e) => { reject(e.target.error); };
+  });
+}
+
+function dbGetAll(storeName) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const request = tx.objectStore(storeName).getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function dbGet(storeName, id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const request = tx.objectStore(storeName).get(id);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function dbPut(storeName, item) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const request = tx.objectStore(storeName).put(item);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function dbAdd(storeName, item) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const request = tx.objectStore(storeName).add(item);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function dbDelete(storeName, id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const request = tx.objectStore(storeName).delete(id);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function dbClear(storeName) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const request = tx.objectStore(storeName).clear();
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// ============================================================
+// Data Access
+// ============================================================
+const Data = {
+  async getCompanies() { return dbGetAll('companies'); },
+  
+  async getCompanyByName(name) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('companies', 'readonly');
+      const request = tx.objectStore('companies').index('name').get(name);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  },
+  
+  async addCompany(name) {
+    const existing = await this.getCompanyByName(name);
+    if (existing) return existing.id;
+    return dbAdd('companies', { name, createdAt: new Date().toISOString() });
+  },
+  
+  async getApplications() { return dbGetAll('applications'); },
+  
+  async getApplicationsByCompany(companyId) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('applications', 'readonly');
+      const request = tx.objectStore('applications').index('companyId').getAll(companyId);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  },
+  
+  async addApplication(app) { return dbAdd('applications', app); },
+  async updateApplication(app) { return dbPut('applications', app); },
+  async deleteApplication(id) { return dbDelete('applications', id); },
+  
+  async getWeeklyTasks() { return dbGetAll('weeklyTasks'); },
+  async addWeeklyTask(task) { return dbAdd('weeklyTasks', task); },
+  async deleteWeeklyTask(id) { return dbDelete('weeklyTasks', id); },
+  
+  async resetAll() {
+    await dbClear('companies');
+    await dbClear('applications');
+    await dbClear('weeklyTasks');
+  },
+  
+  async exportAll() {
+    return {
+      companies: await this.getCompanies(),
+      applications: await this.getApplications(),
+      weeklyTasks: await this.getWeeklyTasks(),
+      exportDate: new Date().toISOString()
+    };
+  },
+  
+  async importAll(data) {
+    await this.resetAll();
+    for (const c of data.companies || []) { const { id, ...rest } = c; await dbAdd('companies', rest); }
+    for (const a of data.applications || []) { const { id, ...rest } = a; await dbAdd('applications', rest); }
+    for (const t of data.weeklyTasks || []) { const { id, ...rest } = t; await dbAdd('weeklyTasks', rest); }
+  }
+};
+
+// ============================================================
 // App State
+// ============================================================
 let state = {
-  entries: [],
+  companyView: [],  // [{ company: {id,name}, applications: [...] }]
   weeklyTasks: [],
   filters: { stage: 'all', search: '', sort: 'date-desc' },
   currentWeek: getISOWeekInfo(new Date())
 };
 
-// Initialize
-function init() {
-  loadData();
-  renderAll();
-}
-
-// Data Persistence
-function loadData() {
-  const saved = localStorage.getItem('job-tracker-entries');
-  const savedTasks = localStorage.getItem('job-tracker-weekly-tasks');
-  
-  if (saved) {
-    try {
-      state.entries = JSON.parse(saved);
-    } catch(e) {
-      state.entries = [...SEED_DATA];
-    }
-  } else {
-    state.entries = [...SEED_DATA];
-  }
-  
-  if (savedTasks) {
-    try {
-      state.weeklyTasks = JSON.parse(savedTasks);
-    } catch(e) {
-      state.weeklyTasks = [];
-    }
-  }
-}
-
-function saveData() {
-  localStorage.setItem('job-tracker-entries', JSON.stringify(state.entries));
-  localStorage.setItem('job-tracker-weekly-tasks', JSON.stringify(state.weeklyTasks));
-}
-
-function resetData() {
-  if (confirm('Reset all data to original spreadsheet? This cannot be undone.')) {
-    state.entries = [...SEED_DATA];
-    state.weeklyTasks = [];
-    saveData();
-    renderAll();
-  }
-}
-
-function exportData() {
-  const data = {
-    entries: state.entries,
-    weeklyTasks: state.weeklyTasks,
-    exportDate: new Date().toISOString()
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'job-tracker-export.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
+// ============================================================
 // ISO Week Utilities
+// ============================================================
 function getISOWeekInfo(date) {
-  // Standard ISO 8601 week number calculation
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
-  
-  // Set to nearest Thursday (current date + 4 - current day number, make Sunday 7)
   d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-  
-  // Year start
   const yearStart = new Date(d.getFullYear(), 0, 1);
-  
-  // Calculate full weeks between nearest Thursday and year start
   const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-  
-  // Get Monday of this week
   const monday = new Date(date);
   monday.setDate(date.getDate() - (date.getDay() || 7) + 1);
-  
-  // Get Sunday
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
-  
-  return {
-    year: d.getFullYear(),
-    week: weekNum,
-    monday: monday,
-    sunday: sunday
-  };
+  return { year: d.getFullYear(), week: weekNum, monday, sunday };
 }
 
 function formatDate(date) {
@@ -1622,92 +1175,56 @@ function formatDate(date) {
 }
 
 function getISOWeekNumber(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
-  const info = getISOWeekInfo(d);
-  return info.week;
+  return getISOWeekInfo(new Date(dateStr + 'T00:00:00')).week;
 }
 
-// Deduplication
-function normalizeCompanyName(name) {
-  // Convert to lowercase, remove punctuation except hyphens
-  let normalized = name.toLowerCase().trim();
+// ============================================================
+// Data Loading
+// ============================================================
+async function loadData() {
+  const companies = await Data.getCompanies();
+  const applications = await Data.getApplications();
+  state.weeklyTasks = await Data.getWeeklyTasks();
   
-  // Remove spaces and punctuation to create a single token
-  normalized = normalized.replace(/[^a-z0-9]/g, '');
-  
-  return normalized;
-}
-
-function deduplicateEntries() {
-  const groups = {};
-  
-  state.entries.forEach(entry => {
-    const key = normalizeCompanyName(entry.company);
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(entry);
+  const appMap = {};
+  applications.forEach(app => {
+    if (!appMap[app.companyId]) appMap[app.companyId] = [];
+    appMap[app.companyId].push(app);
   });
   
-  const deduped = [];
-  
-  Object.entries(groups).forEach(([key, entries]) => {
-    entries.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    const latestNonRejected = entries.find(e => e.stage !== 'No hire');
-    const currentStage = latestNonRejected ? latestNonRejected.stage : 'No hire';
-    const latestEntry = entries[0];
-    
-    // Pick the most commonly used company name variant
-    const nameCounts = {};
-    entries.forEach(e => {
-      nameCounts[e.company] = (nameCounts[e.company] || 0) + 1;
-    });
-    const bestName = Object.entries(nameCounts).sort((a, b) => b[1] - a[1])[0][0];
-    
-    deduped.push({
-      company: bestName,
-      stage: currentStage,
-      date: latestEntry.date,
-      roles: [...new Set(entries.map(e => e.role))].filter(Boolean),
-      primaryRole: latestEntry.role,
-      notes: latestEntry.notes,
-      entries: entries,
-      entryCount: entries.length
-    });
-  });
-  
-  return deduped;
+  state.companyView = companies.map(c => ({
+    company: c,
+    applications: (appMap[c.id] || []).sort((a, b) => new Date(b.date) - new Date(a.date))
+  }));
 }
 
-// Weekly Tasks
+function getAllApplications() {
+  return state.companyView.flatMap(cv => cv.applications);
+}
+
+// ============================================================
+// Weekly Calculations
+// ============================================================
 function getWeeklyJobTasks(weekNum) {
   const qualifying = ['Networking', 'Applied', 'Interviewing', 'Offer'];
-  return state.entries.filter(e => {
-    const entryWeek = getISOWeekNumber(e.date);
-    return entryWeek === weekNum && qualifying.includes(e.stage);
-  });
+  return getAllApplications().filter(a => 
+    getISOWeekNumber(a.date) === weekNum && qualifying.includes(a.stage)
+  );
 }
 
 function getWeeklyStandaloneTasks(weekNum) {
-  return state.weeklyTasks.filter(t => {
-    return getISOWeekNumber(t.date) === weekNum;
-  });
+  return state.weeklyTasks.filter(t => getISOWeekNumber(t.date) === weekNum);
 }
 
 function getWeeklyTaskCount(weekNum) {
-  const jobTasks = getWeeklyJobTasks(weekNum);
-  const standaloneTasks = getWeeklyStandaloneTasks(weekNum);
-  return jobTasks.length + standaloneTasks.length;
+  return getWeeklyJobTasks(weekNum).length + getWeeklyStandaloneTasks(weekNum).length;
 }
 
-function getWeeklyAllEntries(weekNum) {
-  // Get ALL entries for a week (not just qualifying ones)
-  return state.entries.filter(e => {
-    return getISOWeekNumber(e.date) === weekNum;
-  });
-}
-
+// ============================================================
 // Rendering
-function renderAll() {
+// ============================================================
+async function renderAll() {
+  await loadData();
   renderWeeklyProgress();
   renderDashboard();
   renderStageBreakdown();
@@ -1721,18 +1238,13 @@ function renderWeeklyProgress() {
   const count = getWeeklyTaskCount(week.week);
   
   document.getElementById('weekly-title').textContent = `Week ${week.week}`;
-  document.getElementById('weekly-date-range').textContent = 
-    `${formatDate(week.monday)} – ${formatDate(week.sunday)}`;
-  
+  document.getElementById('weekly-date-range').textContent = `${formatDate(week.monday)} – ${formatDate(week.sunday)}`;
   document.getElementById('progress-count').textContent = `${count}/3 tasks`;
   
-  // Progress segments
   for (let i = 1; i <= 3; i++) {
-    const seg = document.getElementById(`seg-${i}`);
-    seg.classList.toggle('filled', count >= i);
+    document.getElementById(`seg-${i}`).classList.toggle('filled', count >= i);
   }
   
-  // Status message
   const statusEl = document.getElementById('progress-status');
   if (count >= 3) {
     statusEl.className = 'progress-status eligible';
@@ -1750,139 +1262,205 @@ function renderWeeklyProgress() {
 }
 
 function renderDashboard() {
-  const deduped = deduplicateEntries();
-  
-  document.getElementById('stat-total').textContent = deduped.length;
-  document.getElementById('stat-active').textContent = 
-    deduped.filter(d => d.stage !== 'No hire').length;
-  document.getElementById('stat-interviewing').textContent = 
-    deduped.filter(d => d.stage === 'Interviewing').length;
-  document.getElementById('stat-nohire').textContent = 
-    deduped.filter(d => d.stage === 'No hire').length;
+  const apps = getAllApplications();
+  document.getElementById('stat-total').textContent = state.companyView.length;
+  document.getElementById('stat-active').textContent = apps.filter(a => a.stage !== 'No hire').length;
+  document.getElementById('stat-interviewing').textContent = apps.filter(a => a.stage === 'Interviewing').length;
+  document.getElementById('stat-nohire').textContent = apps.filter(a => a.stage === 'No hire').length;
 }
 
 function renderStageBreakdown() {
-  const deduped = deduplicateEntries();
+  const apps = getAllApplications();
   const stages = { Networking: 0, Applied: 0, Interviewing: 0, Offer: 0, 'No hire': 0 };
+  apps.forEach(a => { stages[a.stage] = (stages[a.stage] || 0) + 1; });
   
-  deduped.forEach(d => {
-    stages[d.stage] = (stages[d.stage] || 0) + 1;
-  });
-  
-  const total = deduped.length;
-  const barEl = document.getElementById('stage-bar');
-  const legendEl = document.getElementById('stage-legend');
-  
-  const stageClasses = {
-    'Networking': 'networking',
-    'Applied': 'applied',
-    'Interviewing': 'interviewing',
-    'Offer': 'offer',
-    'No hire': 'nohire'
-  };
-  
-  let barHTML = '';
-  let legendHTML = '';
+  const total = apps.length;
+  const stageClasses = { 'Networking': 'networking', 'Applied': 'applied', 'Interviewing': 'interviewing', 'Offer': 'offer', 'No hire': 'nohire' };
+  let barHTML = '', legendHTML = '';
   
   Object.entries(stages).forEach(([stage, count]) => {
     if (count > 0) {
       const pct = (count / total * 100).toFixed(1);
       barHTML += `<div class="stage-bar-segment ${stageClasses[stage]}" style="width: ${pct}%">${count}</div>`;
-      legendHTML += `
-        <div class="stage-legend-item">
-          <div class="stage-dot ${stageClasses[stage]}"></div>
-          <span>${stage}: ${count}</span>
-        </div>`;
+      legendHTML += `<div class="stage-legend-item"><div class="stage-dot ${stageClasses[stage]}"></div><span>${stage}: ${count}</span></div>`;
     }
   });
   
-  barEl.innerHTML = barHTML;
-  legendEl.innerHTML = legendHTML;
+  document.getElementById('stage-bar').innerHTML = barHTML;
+  document.getElementById('stage-legend').innerHTML = legendHTML;
 }
 
 function renderWeeklyHistory() {
   const container = document.getElementById('weekly-history');
   const currentWeek = state.currentWeek.week;
-  
-  // Get all weeks with data (current week + past weeks)
+  const apps = getAllApplications();
+
   const weeksWithData = new Set();
-  state.entries.forEach(e => {
-    const week = getISOWeekNumber(e.date);
-    if (week > 0) weeksWithData.add(week);
-  });
-  state.weeklyTasks.forEach(t => {
-    const week = getISOWeekNumber(t.date);
-    if (week > 0) weeksWithData.add(week);
-  });
-  
-  // Add current week
+  apps.forEach(a => { const w = getISOWeekNumber(a.date); if (w > 0) weeksWithData.add(w); });
+  state.weeklyTasks.forEach(t => { const w = getISOWeekNumber(t.date); if (w > 0) weeksWithData.add(w); });
   weeksWithData.add(currentWeek);
-  
-  // Sort weeks descending and take last 12
+
   const sortedWeeks = [...weeksWithData].sort((a, b) => b - a).slice(0, 12);
-  
-  let html = '';
-  sortedWeeks.forEach(weekNum => {
-    const allEntries = getWeeklyAllEntries(weekNum);
-    const count = allEntries.length;
-    const qualifyingCount = getWeeklyTaskCount(weekNum);
+
+  container.innerHTML = sortedWeeks.map(weekNum => {
+    const count = getWeeklyTaskCount(weekNum);
+    const isEligible = count >= 3;
     const isCurrent = weekNum === currentWeek;
-    const isEligible = qualifyingCount >= 3;
-    
-    // Calculate date range for this week
-    const jan1 = new Date(state.currentWeek.year, 0, 1);
-    const weekDate = new Date(jan1);
-    weekDate.setDate(jan1.getDate() + (weekNum - 1) * 7);
-    const weekInfo = getISOWeekInfo(weekDate);
-    
-    let cardClass = 'week-card';
-    if (isCurrent) cardClass += ' current';
-    else if (isEligible) cardClass += ' eligible';
-    else cardClass += ' incomplete';
-    
-    let statusClass = isEligible ? 'eligible' : 'incomplete';
-    let statusText = isEligible ? '✓' : `${count}/3`;
-    
-    html += `
-      <div class="${cardClass}">
+    const isPast = weekNum < currentWeek;
+    const statusClass = isEligible ? 'week-complete' : isCurrent ? 'week-in-progress' : 'week-missed';
+    const statusText = isEligible ? 'Complete' : isCurrent ? 'In progress' : isPast ? 'Missed' : 'No tasks';
+
+    return `<div class="week-card-wrapper" data-week="${weekNum}">
+      <div class="week-card ${statusClass}" data-week="${weekNum}" onclick="toggleWeekExpand(this, ${weekNum})" onmouseenter="showWeekTooltip(event, ${weekNum})" onmousemove="moveWeekTooltip(event)" onmouseleave="hideWeekTooltip()">
         <div class="week-card-number">Wk ${weekNum}</div>
-        <div class="week-card-count">${count}</div>
-        <div class="week-card-status ${statusClass}">${statusText}</div>
-      </div>`;
+        <div class="week-card-count">${count}/3 items</div>
+        <div class="week-card-status ${statusClass}"><span class="week-status-dot ${statusClass}"></span>${statusText}</div>
+      </div>
+      <div class="week-detail-panel" id="week-detail-${weekNum}"></div>
+    </div>`;
+  }).join('');
+}
+
+// Tooltip
+let tooltipHideTimeout = null;
+
+function showWeekTooltip(event, weekNum) {
+  clearTimeout(tooltipHideTimeout);
+  const count = getWeeklyTaskCount(weekNum);
+  const isEligible = count >= 3;
+  const isCurrent = weekNum === state.currentWeek.week;
+  const isPast = weekNum < state.currentWeek.week;
+  const statusClass = isEligible ? 'week-complete' : isCurrent ? 'week-in-progress' : 'week-missed';
+  const statusText = isEligible ? 'Complete ✓' : isCurrent ? 'In progress' : isPast ? 'Missed' : 'No tasks';
+
+  document.getElementById('tooltip-header').innerHTML = `<span class="week-status-dot ${statusClass}"></span> Week ${weekNum}`;
+  document.getElementById('tooltip-count').textContent = `${count}/3 items for week ${weekNum}`;
+  const ts = document.getElementById('tooltip-status');
+  ts.className = 'week-tooltip-status ' + statusClass;
+  ts.textContent = statusText;
+
+  positionTooltip(event);
+  document.getElementById('week-tooltip').classList.add('visible');
+}
+
+function moveWeekTooltip(event) { positionTooltip(event); }
+
+function positionTooltip(event) {
+  const tooltip = document.getElementById('week-tooltip');
+  const margin = 12;
+  let x = event.clientX + margin, y = event.clientY + margin;
+  const rect = tooltip.getBoundingClientRect();
+  if (x + rect.width > window.innerWidth - margin) x = event.clientX - rect.width - margin;
+  if (y + rect.height > window.innerHeight - margin) y = event.clientY - rect.height - margin;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+
+function hideWeekTooltip() {
+  tooltipHideTimeout = setTimeout(() => document.getElementById('week-tooltip').classList.remove('visible'), 100);
+}
+
+// Week Expansion
+let expandedWeek = null;
+
+function toggleWeekExpand(cardEl, weekNum) {
+  const panel = document.getElementById('week-detail-' + weekNum);
+  if (!panel) return;
+
+  if (expandedWeek === weekNum) {
+    panel.classList.remove('expanded');
+    cardEl.classList.remove('expanded');
+    expandedWeek = null;
+    return;
+  }
+
+  if (expandedWeek !== null) {
+    const prev = document.getElementById('week-detail-' + expandedWeek);
+    const prevCard = document.querySelector(`.week-card[data-week="${expandedWeek}"]`);
+    if (prev) prev.classList.remove('expanded');
+    if (prevCard) prevCard.classList.remove('expanded');
+  }
+
+  panel.innerHTML = renderWeekDetailContent(weekNum);
+  panel.classList.add('expanded');
+  cardEl.classList.add('expanded');
+  expandedWeek = weekNum;
+}
+
+function renderWeekDetailContent(weekNum) {
+  const count = getWeeklyTaskCount(weekNum);
+  const isEligible = count >= 3;
+  const isCurrent = weekNum === state.currentWeek.week;
+  const isPast = weekNum < state.currentWeek.week;
+  const statusClass = isEligible ? 'week-complete' : isCurrent ? 'week-in-progress' : 'week-missed';
+  const statusText = isEligible ? 'Complete ✓' : isCurrent ? 'In progress' : isPast ? 'Missed' : '';
+
+  let html = `<div class="week-detail-header">Week ${weekNum} — ${count}/3 items <span class="week-tooltip-status ${statusClass}" style="margin-left:8px;">${statusText}</span></div>`;
+
+  const jobTasks = getWeeklyJobTasks(weekNum);
+  const standaloneTasks = getWeeklyStandaloneTasks(weekNum);
+
+  if (jobTasks.length === 0 && standaloneTasks.length === 0) {
+    return html + '<div class="week-no-tasks">No qualifying tasks this week</div>';
+  }
+
+  jobTasks.forEach(a => {
+    const sc = a.stage.toLowerCase().replace(/\s+/g, '');
+    html += `<div class="week-task-item">
+      <span class="week-task-icon">📋</span>
+      <div class="week-task-info">
+        <div class="week-task-company">${a.companyName}</div>
+        <div class="week-task-role">${a.role || ''}</div>
+        <div class="week-task-date">${a.date}</div>
+      </div>
+      <span class="week-task-stage ${sc}">${a.stage}</span>
+    </div>`;
   });
-  
-  container.innerHTML = html;
+
+  standaloneTasks.forEach(t => {
+    html += `<div class="week-standalone-item">
+      <span class="week-task-icon">✏️</span>
+      <div class="week-task-info">
+        <div class="week-standalone-desc">${t.description}</div>
+        <div class="week-task-date">${t.date}</div>
+      </div>
+    </div>`;
+  });
+
+  return html;
 }
 
 function renderTable() {
-  const deduped = deduplicateEntries();
   const { stage, search, sort } = state.filters;
+  let filtered = [...state.companyView];
   
-  let filtered = deduped;
-  
-  // Stage filter
   if (stage !== 'all') {
-    filtered = filtered.filter(d => d.stage === stage);
+    filtered = filtered.filter(cv => cv.applications.some(a => a.stage === stage));
   }
   
-  // Search filter
   if (search) {
     const q = search.toLowerCase();
-    filtered = filtered.filter(d => 
-      d.company.toLowerCase().includes(q) ||
-      d.roles.some(r => r.toLowerCase().includes(q)) ||
-      d.primaryRole.toLowerCase().includes(q)
+    filtered = filtered.filter(cv => 
+      cv.company.name.toLowerCase().includes(q) ||
+      cv.applications.some(a => a.role && a.role.toLowerCase().includes(q))
     );
   }
   
-  // Sort
   if (sort === 'date-desc') {
-    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+    filtered.sort((a, b) => {
+      const aDate = a.applications[0]?.date || '0000';
+      const bDate = b.applications[0]?.date || '0000';
+      return new Date(bDate) - new Date(aDate);
+    });
   } else if (sort === 'company-asc') {
-    filtered.sort((a, b) => a.company.localeCompare(b.company));
+    filtered.sort((a, b) => a.company.name.localeCompare(b.company.name));
   } else if (sort === 'stage-asc') {
     const stageOrder = { 'Interviewing': 0, 'Offer': 1, 'Applied': 2, 'Networking': 3, 'No hire': 4 };
-    filtered.sort((a, b) => (stageOrder[a.stage] || 5) - (stageOrder[b.stage] || 5));
+    filtered.sort((a, b) => {
+      const aStage = a.applications[0]?.stage || 'No hire';
+      const bStage = b.applications[0]?.stage || 'No hire';
+      return (stageOrder[aStage] || 5) - (stageOrder[bStage] || 5);
+    });
   }
   
   const tbody = document.getElementById('tracker-body');
@@ -1896,31 +1474,36 @@ function renderTable() {
   
   emptyState.style.display = 'none';
   
-  tbody.innerHTML = filtered.map(d => `
-    <tr class="clickable" onclick="showCompanyHistory('${d.company}')">
-      <td><strong>${d.company}</strong></td>
-      <td><span class="stage-badge ${d.stage.toLowerCase().replace(' ', '')}">${d.stage}</span></td>
-      <td>${d.date}</td>
-      <td>${d.roles.length > 1 ? `<span class="role-count">${d.roles.length} roles</span>` : ''}</td>
-      <td>${d.primaryRole}</td>
-      <td class="notes-cell" title="${d.notes || ''}">${d.notes || '—'}</td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = filtered.map(cv => {
+    const latest = cv.applications[0];
+    const stage = latest?.stage || 'No hire';
+    const date = latest?.date || '—';
+    const role = latest?.role || '—';
+    const notes = latest?.notes || '';
+    const appCount = cv.applications.length;
+    
+    return `<tr class="clickable" onclick="showCompanyHistory(${cv.company.id})">
+      <td><strong>${cv.company.name}</strong></td>
+      <td><span class="stage-badge ${stage.toLowerCase().replace(' ', '')}">${stage}</span></td>
+      <td>${date}</td>
+      <td>${appCount > 1 ? `<span class="role-count">${appCount} applications</span>` : ''}</td>
+      <td>${role}</td>
+      <td class="notes-cell" title="${notes}">${notes || '—'}</td>
+    </tr>`;
+  }).join('');
 }
 
 function renderFooter() {
   document.getElementById('footer').textContent = 
-    `Job Search Tracker • ${state.entries.length} entries • Last updated: ${new Date().toLocaleDateString()}`;
+    `Job Search Tracker • ${state.companyView.length} companies • Last updated: ${new Date().toLocaleDateString()}`;
 }
 
 // Filters
 function setFilter(newStage) {
   state.filters.stage = newStage;
-  
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.stage === newStage);
   });
-  
   renderTable();
 }
 
@@ -1930,28 +1513,37 @@ function applyFilters() {
   renderTable();
 }
 
-// Entry CRUD
-function openEntryModal(entry = null) {
+// ============================================================
+// Entry Modal
+// ============================================================
+let editingApplicationId = null;
+let editingCompanyId = null;
+
+async function openEntryModal(companyId = null, applicationId = null) {
   const modal = document.getElementById('entry-modal');
   const title = document.getElementById('modal-title');
   const deleteBtn = document.getElementById('delete-btn');
   
-  if (entry) {
-    title.textContent = 'Edit Entry';
+  if (applicationId) {
+    const app = await dbGet('applications', applicationId);
+    if (!app) return;
+    editingApplicationId = applicationId;
+    editingCompanyId = app.companyId;
+    title.textContent = 'Edit Application';
     deleteBtn.style.display = 'block';
-    document.getElementById('entry-id').value = entry.id;
-    document.getElementById('entry-company').value = entry.company;
-    document.getElementById('entry-date').value = entry.date;
-    document.getElementById('entry-stage').value = entry.stage;
-    document.getElementById('entry-role').value = entry.role;
-    document.getElementById('entry-score').value = entry.score;
-    document.getElementById('entry-notes').value = entry.notes || '';
-    setScore(entry.score);
+    document.getElementById('entry-company').value = (await dbGet('companies', app.companyId))?.name || '';
+    document.getElementById('entry-date').value = app.date;
+    document.getElementById('entry-stage').value = app.stage;
+    document.getElementById('entry-role').value = app.role || '';
+    document.getElementById('entry-score').value = app.score || 0;
+    document.getElementById('entry-notes').value = app.notes || '';
+    setScore(app.score || 0);
   } else {
-    title.textContent = 'Add Entry';
+    editingApplicationId = null;
+    editingCompanyId = companyId;
+    title.textContent = 'Add Application';
     deleteBtn.style.display = 'none';
-    document.getElementById('entry-id').value = '';
-    document.getElementById('entry-company').value = '';
+    document.getElementById('entry-company').value = companyId ? (await dbGet('companies', companyId))?.name || '' : '';
     document.getElementById('entry-date').value = new Date().toISOString().split('T')[0];
     document.getElementById('entry-stage').value = 'Applied';
     document.getElementById('entry-role').value = '';
@@ -1961,110 +1553,42 @@ function openEntryModal(entry = null) {
   }
   
   modal.classList.add('active');
+  updateRoleRequired();
+  
+  const companyInput = document.getElementById('entry-company');
+  companyInput.addEventListener('input', updateRoleSuggestions);
+  document.getElementById('entry-stage').addEventListener('change', updateRoleRequired);
+  if (companyInput.value) updateRoleSuggestions();
+}
+
+function updateRoleRequired() {
+  const stage = document.getElementById('entry-stage').value;
+  document.getElementById('role-required').style.display = stage === 'Networking' ? 'none' : 'inline';
+  document.getElementById('entry-role').placeholder = stage === 'Networking' ? 'Optional for networking' : '';
+}
+
+async function updateRoleSuggestions() {
+  const company = document.getElementById('entry-company').value.trim();
+  const datalist = document.getElementById('role-suggestions');
+  if (!company) { datalist.innerHTML = ''; return; }
+  
+  const companies = await Data.getCompanies();
+  const match = companies.find(c => c.name.toLowerCase() === company.toLowerCase());
+  if (!match) { datalist.innerHTML = ''; return; }
+  
+  const apps = await Data.getApplicationsByCompany(match.id);
+  const roles = [...new Set(apps.map(a => a.role).filter(Boolean))];
+  
+  datalist.innerHTML = roles.map(r => `<option value="${r}">`).join('');
 }
 
 function closeEntryModal() {
   document.getElementById('entry-modal').classList.remove('active');
+  editingApplicationId = null;
+  editingCompanyId = null;
 }
 
-// Company History Modal
-let currentHistoryCompany = null;
-
-function showCompanyHistory(company) {
-  currentHistoryCompany = company;
-  const modal = document.getElementById('history-modal');
-  const nameEl = document.getElementById('history-company-name');
-  const stageEl = document.getElementById('history-current-stage');
-  const entriesEl = document.getElementById('history-entries');
-  
-  // Get all entries for this company using normalized name matching
-  const normalizedTarget = normalizeCompanyName(company);
-  const companyEntries = state.entries
-    .filter(e => normalizeCompanyName(e.company) === normalizedTarget)
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-  
-  if (companyEntries.length === 0) {
-    modal.classList.remove('active');
-    return;
-  }
-  
-  // Determine current stage
-  const latestNonRejected = companyEntries.find(e => e.stage !== 'No hire');
-  const currentStage = latestNonRejected ? latestNonRejected.stage : 'No hire';
-  
-  nameEl.textContent = companyEntries[0].company;
-  stageEl.innerHTML = `<span class="stage-badge ${currentStage.toLowerCase().replace(' ', '')}">${currentStage}</span>`;
-  
-  // Render entries
-  entriesEl.innerHTML = companyEntries.map(entry => `
-    <div class="history-entry">
-      <div class="history-entry-header">
-        <span class="stage-badge ${entry.stage.toLowerCase().replace(' ', '')}">${entry.stage}</span>
-        <span class="history-entry-date">${entry.date}</span>
-      </div>
-      <div class="history-entry-role">${entry.role || '—'}</div>
-      ${entry.notes ? `<div class="history-entry-notes">${entry.notes}</div>` : ''}
-      <div class="history-entry-actions">
-        <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px;" onclick="editSpecificEntry(${entry.id})">Edit</button>
-        <button class="btn btn-danger" style="font-size: 0.75rem; padding: 4px 8px;" onclick="deleteSpecificEntry(${entry.id})">Delete</button>
-      </div>
-    </div>
-  `).join('');
-  
-  modal.classList.add('active');
-}
-
-function closeHistoryModal() {
-  document.getElementById('history-modal').classList.remove('active');
-  currentHistoryCompany = null;
-}
-
-function addEntryForCompany() {
-  const companyName = currentHistoryCompany;
-  closeHistoryModal();
-  // Pre-fill company name if we were viewing one
-  openEntryModal();
-  if (companyName) {
-    document.getElementById('entry-company').value = companyName;
-  }
-}
-
-function editSpecificEntry(id) {
-  const entry = state.entries.find(e => e.id === id);
-  if (entry) {
-    closeHistoryModal();
-    openEntryModal(entry);
-  }
-}
-
-function deleteSpecificEntry(id) {
-  if (confirm('Delete this entry?')) {
-    state.entries = state.entries.filter(e => e.id !== id);
-    saveData();
-    // Refresh the history modal if still open
-    if (currentHistoryCompany) {
-      showCompanyHistory(currentHistoryCompany);
-    }
-    renderAll();
-  }
-}
-
-function editEntry(company) {
-  const companyEntries = state.entries.filter(e => 
-    e.company.toLowerCase() === company.toLowerCase()
-  );
-  
-  if (companyEntries.length === 1) {
-    openEntryModal(companyEntries[0]);
-  } else {
-    // Show most recent entry
-    companyEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
-    openEntryModal(companyEntries[0]);
-  }
-}
-
-function saveEntry() {
-  const id = document.getElementById('entry-id').value;
+async function saveEntry() {
   const company = document.getElementById('entry-company').value.trim();
   const date = document.getElementById('entry-date').value;
   const stage = document.getElementById('entry-stage').value;
@@ -2072,53 +1596,35 @@ function saveEntry() {
   const score = parseInt(document.getElementById('entry-score').value) || 0;
   const notes = document.getElementById('entry-notes').value.trim();
   
-  if (!company || !date || !role) {
-    alert('Please fill in required fields (Company, Date, Role)');
-    return;
+  if (!company || !date) { alert('Please fill in Company and Date'); return; }
+  if (!role && stage !== 'Networking') { alert('Please fill in the Role field'); return; }
+  
+  // Get or create company
+  let companyId = editingCompanyId;
+  if (!companyId) {
+    const existing = await Data.getCompanyByName(company);
+    companyId = existing?.id || await Data.addCompany(company);
   }
   
-  if (id) {
-    // Edit existing
-    const entry = state.entries.find(e => e.id === parseInt(id));
-    if (entry) {
-      entry.company = company;
-      entry.date = date;
-      entry.stage = stage;
-      entry.role = role;
-      entry.score = score;
-      entry.notes = notes;
-      entry.week = getISOWeekNumber(date);
-    }
+  const appData = { companyId, date, stage, role, score, notes };
+  
+  if (editingApplicationId) {
+    await Data.updateApplication({ id: editingApplicationId, ...appData });
   } else {
-    // Add new
-    const newId = Math.max(0, ...state.entries.map(e => e.id)) + 1;
-    state.entries.push({
-      id: newId,
-      company,
-      date,
-      stage,
-      role,
-      score,
-      notes,
-      week: getISOWeekNumber(date)
-    });
+    await Data.addApplication(appData);
   }
   
-  saveData();
   closeEntryModal();
-  renderAll();
+  await renderAll();
 }
 
-function deleteEntry() {
-  const id = document.getElementById('entry-id').value;
-  if (!id) return;
+async function deleteEntry() {
+  if (!editingApplicationId) return;
+  if (!confirm('Delete this application?')) return;
   
-  if (confirm('Delete this entry?')) {
-    state.entries = state.entries.filter(e => e.id !== parseInt(id));
-    saveData();
-    closeEntryModal();
-    renderAll();
-  }
+  await Data.deleteApplication(editingApplicationId);
+  closeEntryModal();
+  await renderAll();
 }
 
 function setScore(score) {
@@ -2128,54 +1634,99 @@ function setScore(score) {
   });
 }
 
+// ============================================================
+// Company History Modal
+// ============================================================
+let currentHistoryCompanyId = null;
+
+async function showCompanyHistory(companyId) {
+  currentHistoryCompanyId = companyId;
+  const company = await dbGet('companies', companyId);
+  const apps = await Data.getApplicationsByCompany(companyId);
+  apps.sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  if (apps.length === 0) { document.getElementById('history-modal').classList.remove('active'); return; }
+  
+  const latestNonRejected = apps.find(a => a.stage !== 'No hire');
+  const currentStage = latestNonRejected?.stage || 'No hire';
+  
+  document.getElementById('history-company-name').textContent = company.name;
+  document.getElementById('history-current-stage').innerHTML = 
+    `<span class="stage-badge ${currentStage.toLowerCase().replace(' ', '')}">${currentStage}</span>`;
+  
+  document.getElementById('history-entries').innerHTML = apps.map(a => `
+    <div class="history-entry">
+      <div class="history-entry-header">
+        <span class="stage-badge ${a.stage.toLowerCase().replace(' ', '')}">${a.stage}</span>
+        <span class="history-entry-date">${a.date}</span>
+      </div>
+      <div class="history-entry-role">${a.role || '—'}</div>
+      ${a.notes ? `<div class="history-entry-notes">${a.notes}</div>` : ''}
+      <div class="history-entry-actions">
+        <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px;" onclick="editApplication(${a.id})">Edit</button>
+        <button class="btn btn-danger" style="font-size: 0.75rem; padding: 4px 8px;" onclick="deleteApplication(${a.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+  
+  document.getElementById('history-modal').classList.add('active');
+}
+
+function closeHistoryModal() {
+  document.getElementById('history-modal').classList.remove('active');
+  currentHistoryCompanyId = null;
+}
+
+function addEntryForCompany() {
+  const companyId = currentHistoryCompanyId;
+  closeHistoryModal();
+  openEntryModal(companyId);
+}
+
+async function editApplication(id) {
+  closeHistoryModal();
+  await openEntryModal(null, id);
+}
+
+async function deleteApplication(id) {
+  if (!confirm('Delete this application?')) return;
+  await Data.deleteApplication(id);
+  if (currentHistoryCompanyId) await showCompanyHistory(currentHistoryCompanyId);
+  await renderAll();
+}
+
+// ============================================================
 // Task Modal
+// ============================================================
 function openTaskModal() {
-  const modal = document.getElementById('task-modal');
   document.getElementById('task-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('task-description').value = '';
   renderTaskList();
-  modal.classList.add('active');
+  document.getElementById('task-modal').classList.add('active');
 }
 
-function closeTaskModal() {
-  document.getElementById('task-modal').classList.remove('active');
-}
+function closeTaskModal() { document.getElementById('task-modal').classList.remove('active'); }
 
-function saveTask() {
+async function saveTask() {
   const date = document.getElementById('task-date').value;
   const description = document.getElementById('task-description').value.trim();
+  if (!date || !description) { alert('Please fill in date and description'); return; }
   
-  if (!date || !description) {
-    alert('Please fill in date and description');
-    return;
-  }
-  
-  const newId = Math.max(0, ...state.weeklyTasks.map(t => t.id || 0), ...state.entries.map(e => e.id)) + 1;
-  state.weeklyTasks.push({
-    id: newId,
-    date,
-    description
-  });
-  
-  saveData();
+  await Data.addWeeklyTask({ date, description });
   document.getElementById('task-description').value = '';
   renderTaskList();
-  renderAll();
+  await renderAll();
 }
 
-function deleteTask(id) {
-  state.weeklyTasks = state.weeklyTasks.filter(t => t.id !== id);
-  saveData();
+async function deleteTask(id) {
+  await Data.deleteWeeklyTask(id);
   renderTaskList();
-  renderAll();
+  await renderAll();
 }
 
 function renderTaskList() {
   const container = document.getElementById('task-list');
-  const currentWeek = state.currentWeek.week;
-  
-  // Get standalone tasks for current week
-  const currentWeekTasks = getWeeklyStandaloneTasks(currentWeek);
+  const currentWeekTasks = getWeeklyStandaloneTasks(state.currentWeek.week);
   
   if (currentWeekTasks.length === 0) {
     container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.875rem;">No standalone tasks this week</div>';
@@ -2190,25 +1741,119 @@ function renderTaskList() {
   `).join('');
 }
 
-// Keyboard shortcuts
+// ============================================================
+// Export / Import
+// ============================================================
+async function exportData() {
+  const data = await Data.exportAll();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'job-tracker-export.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function resetData() {
+  if (!confirm('Reset all data? This cannot be undone.')) return;
+  await Data.resetAll();
+  await renderAll();
+}
+
+// ============================================================
+// Keyboard & Click Handlers
+// ============================================================
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeEntryModal();
     closeTaskModal();
+    closeHistoryModal();
   }
 });
 
-// Click outside modal to close
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
   overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      overlay.classList.remove('active');
-    }
+    if (e.target === overlay) overlay.classList.remove('active');
   });
 });
 
+// ============================================================
+// Migration from localStorage (old format)
+// ============================================================
+async function migrateFromLocalStorage() {
+  const savedEntries = localStorage.getItem('job-tracker-entries');
+  const savedTasks = localStorage.getItem('job-tracker-weekly-tasks');
+  
+  if (!savedEntries && !savedTasks) return false;
+  
+  let entries = [];
+  let tasks = [];
+  
+  try {
+    if (savedEntries) entries = JSON.parse(savedEntries);
+    if (savedTasks) tasks = JSON.parse(savedTasks);
+  } catch(e) {
+    console.error('Failed to parse localStorage data:', e);
+    return false;
+  }
+  
+  if (entries.length === 0 && tasks.length === 0) return false;
+  
+  // Check if IndexedDB already has data
+  const existingCompanies = await Data.getCompanies();
+  if (existingCompanies.length > 0) return false;
+  
+  // Group entries by company name (case-insensitive)
+  const companyMap = {};
+  entries.forEach(entry => {
+    const key = entry.company.toLowerCase().trim();
+    if (!companyMap[key]) {
+      companyMap[key] = { name: entry.company, entries: [] };
+    }
+    companyMap[key].entries.push(entry);
+  });
+  
+  // Create companies and applications
+  for (const [key, { name, entries: companyEntries }] of Object.entries(companyMap)) {
+    const companyId = await Data.addCompany(name);
+    
+    for (const entry of companyEntries) {
+      await Data.addApplication({
+        companyId,
+        date: entry.date,
+        stage: entry.stage,
+        role: entry.role || '',
+        score: entry.score || 0,
+        notes: entry.notes || ''
+      });
+    }
+  }
+  
+  // Migrate weekly tasks
+  for (const task of tasks) {
+    await Data.addWeeklyTask({
+      date: task.date,
+      description: task.description
+    });
+  }
+  
+  // Clear old localStorage data
+  localStorage.removeItem('job-tracker-entries');
+  localStorage.removeItem('job-tracker-weekly-tasks');
+  
+  console.log(`Migrated ${entries.length} entries and ${tasks.length} tasks to IndexedDB`);
+  return true;
+}
 
-init();
+// ============================================================
+// Init
+// ============================================================
+(async function init() {
+  await openDB();
+  await migrateFromLocalStorage();
+  await renderAll();
+})();
 </script>
 </body>
 </html>
