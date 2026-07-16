@@ -231,99 +231,111 @@ body {
 .stage-dot.nohire { background: var(--danger); }
 
 /* Weekly History */
-.weekly-history {
+.content-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .content-layout {
+    grid-template-columns: 1fr;
+  }
+  .weekly-sidebar {
+    order: -1;
+  }
+}
+
+.weekly-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 20px;
+}
+
+.weekly-sidebar-section {
   background: var(--surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 20px;
-  margin-bottom: 24px;
+  padding: 16px;
 }
 
-.weekly-history h3 {
-  font-size: 0.875rem;
-  font-weight: 600;
+.weekly-sidebar-section h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
   margin-bottom: 12px;
 }
 
-.weekly-history-list {
+.week-summary {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.week-card {
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+.week-summary-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: transform 160ms var(--ease-out), box-shadow 160ms ease, background-color 160ms ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .week-card:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-1px);
-  }
-}
-
-.week-card:active {
-  transform: scale(0.98);
-}
-
-/* Color states: blue=complete, amber=in-progress, gray=missed */
-.week-card.week-complete { border-color: #3b82f6; background: #eff6ff; }
-.week-card.week-in-progress { border-color: var(--warning); background: var(--warning-light); }
-.week-card.week-missed { border-color: var(--gray); background: var(--gray-light); }
-
-.week-card-number { font-size: 0.75rem; color: var(--text-muted); min-width: 50px; }
-.week-card-count { font-size: 0.875rem; font-weight: 600; flex: 1; }
-.week-card-status { font-size: 0.75rem; font-weight: 500; display: flex; align-items: center; gap: 4px; }
-.week-card-status.week-complete { color: #3b82f6; }
-.week-card-status.week-in-progress { color: var(--warning); }
-.week-card-status.week-missed { color: var(--gray); }
-
-/* Status dot */
-.week-status-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 4px;
-  vertical-align: middle;
-}
-.week-status-dot.week-complete { background: #3b82f6; }
-.week-status-dot.week-in-progress { background: var(--warning); }
-.week-status-dot.week-missed { background: var(--gray); }
-
-/* Expanded Week Detail */
-.week-detail-panel {
-  background: var(--gray-light);
-  border-radius: var(--radius-sm);
-  margin-top: 8px;
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height 200ms var(--ease-out), opacity 200ms ease-out, padding 200ms var(--ease-out);
-  padding: 0 12px;
-}
-
-.week-detail-panel.expanded {
-  max-height: 400px;
-  opacity: 1;
-  overflow-y: auto;
-  padding: 12px;
-}
-
-.week-detail-header {
-  font-weight: 600;
-  font-size: 0.8125rem;
-  padding: 0 0 8px 0;
-  display: flex;
   justify-content: space-between;
-  align-items: center;
+}
+
+.week-summary-progress {
+  display: flex;
+  gap: 4px;
+}
+
+.progress-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gray-light);
+  transition: background-color 160ms ease;
+}
+
+.progress-dot.filled {
+  background: var(--success);
+}
+
+.week-summary-count {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.week-summary-status {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.week-summary-status.week-complete { color: #3b82f6; }
+.week-summary-status.week-in-progress { color: var(--warning); }
+.week-summary-status.week-missed { color: var(--gray); }
+
+.task-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.task-pill {
+  font-size: 0.6875rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--primary-light);
+  color: var(--primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.task-pill.standalone {
+  background: var(--gray-light);
+  color: var(--text-muted);
 }
 
 .week-detail-status {
@@ -783,48 +795,56 @@ tr.clickable { cursor: pointer; }
     <div class="stage-legend" id="stage-legend"></div>
   </section>
 
-  <!-- Weekly History -->
-  <section class="weekly-history">
-    <h3>Weekly History (Eligibility)</h3>
-    <div class="weekly-history-list" id="weekly-history"></div>
-  </section>
-
-  <!-- Tracker Table -->
-  <section class="tracker">
-    <div class="tracker-header">
-      <h2>Company Tracker</h2>
-      <input type="text" class="search-input" placeholder="Search company or role..." id="search-input" oninput="applyFilters()">
-      <div class="filter-buttons" id="filter-buttons">
-        <button class="filter-btn active" data-stage="all" onclick="setFilter('all')">All</button>
-        <button class="filter-btn" data-stage="Networking" onclick="setFilter('Networking')">Networking</button>
-        <button class="filter-btn" data-stage="Applied" onclick="setFilter('Applied')">Applied</button>
-        <button class="filter-btn" data-stage="Interviewing" onclick="setFilter('Interviewing')">Interviewing</button>
-        <button class="filter-btn" data-stage="Offer" onclick="setFilter('Offer')">Offer</button>
-        <button class="filter-btn" data-stage="No hire" onclick="setFilter('No hire')">No Hire</button>
+  <div class="content-layout">
+    <!-- Tracker Table -->
+    <section class="tracker">
+      <div class="tracker-header">
+        <h2>Company Tracker</h2>
+        <input type="text" class="search-input" placeholder="Search company or role..." id="search-input" oninput="applyFilters()">
+        <div class="filter-buttons" id="filter-buttons">
+          <button class="filter-btn active" data-stage="all" onclick="setFilter('all')">All</button>
+          <button class="filter-btn" data-stage="Networking" onclick="setFilter('Networking')">Networking</button>
+          <button class="filter-btn" data-stage="Applied" onclick="setFilter('Applied')">Applied</button>
+          <button class="filter-btn" data-stage="Interviewing" onclick="setFilter('Interviewing')">Interviewing</button>
+          <button class="filter-btn" data-stage="Offer" onclick="setFilter('Offer')">Offer</button>
+          <button class="filter-btn" data-stage="No hire" onclick="setFilter('No hire')">No Hire</button>
+        </div>
+        <select class="sort-select" id="sort-select" onchange="applyFilters()">
+          <option value="date-desc">Most Recent</option>
+          <option value="company-asc">Company A-Z</option>
+          <option value="stage-asc">Stage</option>
+        </select>
       </div>
-      <select class="sort-select" id="sort-select" onchange="applyFilters()">
-        <option value="date-desc">Most Recent</option>
-        <option value="company-asc">Company A-Z</option>
-        <option value="stage-asc">Stage</option>
-      </select>
-    </div>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>Stage</th>
-            <th>Latest Date</th>
-            <th>Roles</th>
-            <th>Primary Role</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody id="tracker-body"></tbody>
-      </table>
-    </div>
-    <div class="empty-state" id="empty-state" style="display: none;">No companies match your search</div>
-  </section>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Company</th>
+              <th>Stage</th>
+              <th>Latest Date</th>
+              <th>Roles</th>
+              <th>Primary Role</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="tracker-body"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="empty-state" style="display: none;">No companies match your search</div>
+    </section>
+
+    <!-- Weekly History Sidebar -->
+    <aside class="weekly-sidebar">
+      <div class="weekly-sidebar-section">
+        <h3>This Week</h3>
+        <div id="weekly-current"></div>
+      </div>
+      <div class="weekly-sidebar-section">
+        <h3>Last Week</h3>
+        <div id="weekly-last"></div>
+      </div>
+    </aside>
+  </div>
 
   <footer class="footer" id="footer"></footer>
 </div>
@@ -1247,71 +1267,54 @@ function renderStageBreakdown() {
 }
 
 function renderWeeklyHistory() {
-  const container = document.getElementById('weekly-history');
   const currentWeek = state.currentWeek.week;
-  const apps = getAllApplications();
-  const previousExpandedWeek = expandedWeek;
+  const lastWeek = currentWeek - 1 || 52; // Handle week 1 → 52 transition
 
-  const weeksWithData = new Set();
-  apps.forEach(a => { const w = getISOWeekNumber(a.date); if (w > 0) weeksWithData.add(w); });
-  state.weeklyTasks.forEach(t => { const w = getISOWeekNumber(t.date); if (w > 0) weeksWithData.add(w); });
-  weeksWithData.add(currentWeek);
-
-  const sortedWeeks = [...weeksWithData].sort((a, b) => b - a).slice(0, 12);
-
-  container.innerHTML = sortedWeeks.map(weekNum => {
-    const count = getWeeklyTaskCount(weekNum);
-    const isEligible = count >= 3;
-    const isCurrent = weekNum === currentWeek;
-    const isPast = weekNum < currentWeek;
-    const statusClass = isEligible ? 'week-complete' : isCurrent ? 'week-in-progress' : 'week-missed';
-    const statusText = isEligible ? 'Complete' : isCurrent ? 'In progress' : isPast ? 'Missed' : 'No tasks';
-    const isExpanded = weekNum === previousExpandedWeek;
-
-    return `<div class="week-card-wrapper" data-week="${weekNum}">
-      <div class="week-card ${statusClass} ${isExpanded ? 'expanded' : ''}" data-week="${weekNum}" onclick="toggleWeekExpand(this, ${weekNum})">
-        <div class="week-card-number">Wk ${weekNum}</div>
-        <div class="week-card-count">${count}/3 items</div>
-        <div class="week-card-status ${statusClass}"><span class="week-status-dot ${statusClass}"></span>${statusText}</div>
-      </div>
-      <div class="week-detail-panel ${isExpanded ? 'expanded' : ''}" id="week-detail-${weekNum}">${isExpanded ? renderWeekDetailContent(weekNum) : ''}</div>
-    </div>`;
-  }).join('');
+  // Render current week
+  renderWeekSummary('weekly-current', currentWeek, true);
+  // Render last week
+  renderWeekSummary('weekly-last', lastWeek, false);
 }
 
-// Week Expansion
-let expandedWeek = null;
+function renderWeekSummary(containerId, weekNum, isCurrent) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
 
-function toggleWeekExpand(cardEl, weekNum) {
-  const panel = document.getElementById('week-detail-' + weekNum);
-  if (!panel) return;
+  const count = getWeeklyTaskCount(weekNum);
+  const isEligible = count >= 3;
+  const statusClass = isEligible ? 'week-complete' : isCurrent ? 'week-in-progress' : 'week-missed';
+  const statusText = isEligible ? 'Complete' : isCurrent ? `${3 - count} more needed` : 'Missed';
 
-  // If clicking the already-expanded week, collapse it
-  if (expandedWeek === weekNum) {
-    panel.classList.remove('expanded');
-    cardEl.classList.remove('expanded');
-    expandedWeek = null;
-    return;
+  const jobTasks = getWeeklyJobTasks(weekNum);
+  const standaloneTasks = getWeeklyStandaloneTasks(weekNum);
+  const totalTasks = jobTasks.length + standaloneTasks.length;
+
+  // Progress dots
+  let dots = '';
+  for (let i = 0; i < 3; i++) {
+    dots += `<span class="progress-dot ${i < count ? 'filled' : ''}"></span>`;
   }
 
-  // Collapse previously expanded week
-  if (expandedWeek !== null) {
-    const prev = document.getElementById('week-detail-' + expandedWeek);
-    const prevCard = document.querySelector(`.week-card[data-week="${expandedWeek}"]`);
-    if (prev) {
-      prev.classList.remove('expanded');
-      prev.innerHTML = ''; // Clear content after collapse animation
-    }
-    if (prevCard) prevCard.classList.remove('expanded');
+  // Task list (compact)
+  let taskList = '';
+  if (totalTasks > 0) {
+    const items = [
+      ...jobTasks.map(a => `<span class="task-pill">${a.companyName}</span>`),
+      ...standaloneTasks.map(t => `<span class="task-pill standalone">${t.description}</span>`)
+    ];
+    taskList = `<div class="task-pills">${items.join('')}</div>`;
   }
 
-  // Expand new week - populate content if not already there
-  if (!panel.innerHTML.trim()) {
-    panel.innerHTML = renderWeekDetailContent(weekNum);
-  }
-  panel.classList.add('expanded');
-  cardEl.classList.add('expanded');
-  expandedWeek = weekNum;
+  container.innerHTML = `
+    <div class="week-summary">
+      <div class="week-summary-header">
+        <div class="week-summary-progress">${dots}</div>
+        <span class="week-summary-count">${count}/3</span>
+      </div>
+      <div class="week-summary-status ${statusClass}">${statusText}</div>
+      ${taskList}
+    </div>
+  `;
 }
 
 function renderWeekDetailContent(weekNum) {
@@ -1577,12 +1580,14 @@ async function showCompanyHistory(companyId) {
   
   if (apps.length === 0) { document.getElementById('history-modal').classList.remove('active'); return; }
   
-  const latestNonRejected = apps.find(a => a.stage !== 'No hire');
-  const currentStage = latestNonRejected?.stage || 'No hire';
+  // Use the same logic as the table: show the latest application's stage
+  const latest = apps[0];
+  const currentStage = latest.stage || 'No hire';
   
   document.getElementById('history-company-name').textContent = company.name;
   document.getElementById('history-current-stage').innerHTML = 
-    `<span class="stage-badge ${currentStage.toLowerCase().replace(' ', '')}">${currentStage}</span>`;
+    `<span class="stage-badge ${currentStage.toLowerCase().replace(' ', '')}">${currentStage}</span>
+     <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 8px;">as of ${latest.date}</span>`;
   
   document.getElementById('history-entries').innerHTML = apps.map(a => `
     <div class="history-entry">
