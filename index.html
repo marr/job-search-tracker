@@ -532,6 +532,21 @@ body {
 
 .filter-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
 
+/* Compact stage filter shown in place of the button row on small screens. */
+.filter-select {
+  display: none;
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(32, 94, 166, 0.15); }
+[data-theme="dark"] .filter-select:focus { box-shadow: 0 0 0 2px rgba(67, 133, 190, 0.25); }
+
 .filter-btn {
   padding: 6px 12px;
   border: 1px solid var(--border);
@@ -914,12 +929,16 @@ tr.notes-row td.date-cell {
   .dashboard { grid-template-columns: repeat(2, 1fr); }
   
   .tracker-header h2 { width: 100%; }
+  /* Keep search + a compact filter dropdown on a single row instead of
+     letting the filter buttons wrap onto several lines. */
   .tracker-controls {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
   }
-  .filter-buttons { justify-content: center; flex-wrap: wrap; }
-  .search-input { min-width: auto; }
+  .tracker-controls .search-input { flex: 1; min-width: 0; }
+  .filter-buttons { display: none; }
+  .filter-select { display: block; }
   
   th, td { padding: 8px 12px; font-size: 0.8rem; }
 }
@@ -1059,6 +1078,14 @@ tr.notes-row td.date-cell {
             <button class="filter-btn" data-stage="Offer" onclick="setFilter('Offer')">Offer</button>
             <button class="filter-btn" data-stage="No hire" onclick="setFilter('No hire')">No Hire</button>
           </div>
+          <select class="filter-select" id="filter-select" aria-label="Filter by stage" onchange="setFilter(this.value)">
+            <option value="all">All stages</option>
+            <option value="Networking">Networking</option>
+            <option value="Applied">Applied</option>
+            <option value="Interviewing">Interviewing</option>
+            <option value="Offer">Offer</option>
+            <option value="No hire">No Hire</option>
+          </select>
         </div>
       </div>
       <div class="table-container">
@@ -1783,6 +1810,8 @@ function setFilter(newStage) {
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.stage === newStage);
   });
+  const filterSelect = document.getElementById('filter-select');
+  if (filterSelect && filterSelect.value !== newStage) filterSelect.value = newStage;
   renderTable();
 }
 
