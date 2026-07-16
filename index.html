@@ -284,6 +284,11 @@ body {
   align-items: start;
 }
 
+/* Allow grid items to shrink below their content's intrinsic width so the
+   table can scroll within its container and the sidebar can wrap instead of
+   forcing the whole layout wider than a narrow (mobile) viewport. */
+.content-layout > * { min-width: 0; }
+
 @media (max-width: 1100px) {
   .content-layout {
     grid-template-columns: 1fr;
@@ -915,8 +920,19 @@ tr.notes-row td.date-cell {
   }
   .filter-buttons { justify-content: center; flex-wrap: wrap; }
   .search-input { min-width: auto; }
-  
-  th, td { padding: 8px 12px; font-size: 0.8rem; }
+
+  /* Keep the tracker table within narrow (mobile) viewports instead of
+     forcing a horizontal scroll wider than the screen. table-layout: fixed
+     makes the table honor the container width, and long values wrap. */
+  .tracker { padding: 14px; }
+  .table-container table { table-layout: fixed; width: 100%; }
+  th, td { padding: 8px 6px; font-size: 0.8rem; overflow-wrap: anywhere; word-break: break-word; }
+  /* Collapse the empty leading/trailing gutter columns on mobile. */
+  th:first-child, td:first-child,
+  th:last-child, td:last-child { width: 0; padding-left: 0; padding-right: 0; }
+  .date-cell { width: 52px; white-space: normal; }
+  .notes-cell { width: 30px; }
+  .stage-badge { padding: 3px 7px; font-size: 0.7rem; }
 }
 </style>
 </head>
