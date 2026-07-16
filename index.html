@@ -517,10 +517,66 @@ tr.clickable { cursor: pointer; }
 .role-count { font-size: 0.75rem; color: var(--text-muted); }
 
 .notes-cell {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  width: 60px;
+  text-align: center;
+}
+
+.date-cell {
   white-space: nowrap;
+  width: 80px;
+}
+
+.app-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+tr.company-row {
+  cursor: pointer;
+}
+
+tr.company-row:hover {
+  background: var(--gray-light);
+}
+
+tr.notes-row {
+  background: var(--gray-light);
+}
+
+tr.notes-row td {
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+tr.notes-row td.date-cell {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.notes-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+.notes-toggle:hover {
+  background: var(--gray-light);
+  color: var(--text);
+  border-color: var(--text-muted);
 }
 
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
@@ -794,12 +850,13 @@ tr.clickable { cursor: pointer; }
         <table>
           <thead>
             <tr>
+              <th></th>
               <th>Company</th>
               <th>Stage</th>
-              <th>Latest Date</th>
-              <th>Roles</th>
+              <th>Date</th>
               <th>Primary Role</th>
               <th>Notes</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="tracker-body"></tbody>
@@ -1084,7 +1141,8 @@ let state = {
   companyView: [],  // [{ company: {id,name}, applications: [...] }]
   weeklyTasks: [],
   filters: { stage: 'all', search: '', sort: 'date-desc' },
-  currentWeek: getISOWeekInfo(new Date())
+  currentWeek: getISOWeekInfo(new Date()),
+  expandedNotesId: null
 };
 
 // ============================================================
@@ -1322,6 +1380,17 @@ function renderWeekDetailContent(weekNum) {
   return html;
 }
 
+function formatDateStr(dateStr) {
+  if (!dateStr || dateStr === '—') return '—';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function toggleNotes(appId) {
+  state.expandedNotesId = state.expandedNotesId === appId ? null : appId;
+  renderTable();
+}
+
 function renderTable() {
   const { stage, search, sort } = state.filters;
   let filtered = [...state.companyView];
@@ -1366,23 +1435,49 @@ function renderTable() {
   
   emptyState.style.display = 'none';
   
-  tbody.innerHTML = filtered.map(cv => {
+  const rows = [];
+  
+  filtered.forEach(cv => {
     const latest = cv.applications[0];
-    const stage = latest?.stage || 'No hire';
+    const appStage = latest?.stage || 'No hire';
     const date = latest?.date || '—';
     const role = latest?.role || '—';
     const notes = latest?.notes || '';
     const appCount = cv.applications.length;
+    const appId = latest?.id;
+    const hasNotes = notes.length > 0;
+    const isNotesExpanded = state.expandedNotesId === appId;
     
-    return `<tr class="clickable" onclick="showCompanyHistory(${cv.company.id})">
-      <td><strong>${cv.company.name}</strong></td>
-      <td><span class="stage-badge ${stage.toLowerCase().replace(' ', '')}">${stage}</span></td>
-      <td>${date}</td>
-      <td>${appCount > 1 ? `<span class="role-count">${appCount} applications</span>` : ''}</td>
-      <td>${role}</td>
-      <td class="notes-cell" title="${notes}">${notes || '—'}</td>
-    </tr>`;
-  }).join('');
+    // Company summary row
+    rows.push(`
+      <tr class="company-row" onclick="showCompanyHistory(${cv.company.id})">
+        <td></td>
+        <td><strong>${cv.company.name}</strong>${appCount > 1 ? ` <span class="app-count">(${appCount})</span>` : ''}</td>
+        <td><span class="stage-badge ${appStage.toLowerCase().replace(' ', '')}">${appStage}</span></td>
+        <td class="date-cell">${formatDateStr(date)}</td>
+        <td>${role}</td>
+        <td class="notes-cell">
+          ${hasNotes ? 
+            `<button class="notes-toggle" onclick="event.stopPropagation(); toggleNotes(${appId})">${isNotesExpanded ? '−' : '+'}</button>` 
+            : ''
+          }
+        </td>
+        <td></td>
+      </tr>
+    `);
+    
+    // Notes expansion row (if notes exist and are expanded)
+    if (hasNotes && isNotesExpanded) {
+      rows.push(`
+        <tr class="notes-row">
+          <td class="date-cell">${formatDateStr(date)}</td>
+          <td colspan="6" class="notes-expanded">${notes}</td>
+        </tr>
+      `);
+    }
+  });
+  
+  tbody.innerHTML = rows.join('');
 }
 
 function renderFooter() {
