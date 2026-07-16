@@ -55,7 +55,7 @@
   --danger: #D14D41;
   --danger-light: #3E1715;
   --gray: #6F6E69;
-  --gray-light: #1C1B1A;
+  --gray-light: #2A2826;
   --shadow: 0 1px 3px rgba(0,0,0,0.2);
   --shadow-lg: 0 4px 12px rgba(0,0,0,0.3);
 }
@@ -123,8 +123,12 @@ body {
   background: var(--surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 24px;
+  padding: 20px 24px;
   margin-bottom: 24px;
+}
+
+.weekly-banner .progress-status {
+  padding-top: 8px;
 }
 
 .weekly-banner-header {
@@ -150,12 +154,17 @@ body {
 
 .progress-segment {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--gray-light);
   border-radius: 6px;
-  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  height: 28px;
 }
 
-.progress-segment.filled { background: var(--success); }
+.progress-segment.filled { background: var(--success); color: white; }
 
 .progress-status {
   display: flex;
@@ -231,11 +240,11 @@ body {
   min-width: 30px;
 }
 
-.stage-bar-segment.networking { background: var(--gray); }
-.stage-bar-segment.applied { background: var(--primary); }
-.stage-bar-segment.interviewing { background: var(--warning); }
-.stage-bar-segment.offer { background: var(--success); }
-.stage-bar-segment.nohire { background: var(--danger); }
+.stage-bar-segment.networking { background: var(--gray); opacity: 0.7; }
+.stage-bar-segment.applied { background: var(--primary); opacity: 0.85; }
+.stage-bar-segment.interviewing { background: var(--warning); opacity: 0.85; }
+.stage-bar-segment.offer { background: var(--success); opacity: 0.85; }
+.stage-bar-segment.nohire { background: var(--danger); opacity: 0.85; }
 
 .stage-legend {
   display: flex;
@@ -256,11 +265,11 @@ body {
   border-radius: 50%;
 }
 
-.stage-dot.networking { background: var(--gray); }
-.stage-dot.applied { background: var(--primary); }
-.stage-dot.interviewing { background: var(--warning); }
-.stage-dot.offer { background: var(--success); }
-.stage-dot.nohire { background: var(--danger); }
+.stage-dot.networking { background: var(--gray); opacity: 0.7; }
+.stage-dot.applied { background: var(--primary); opacity: 0.85; }
+.stage-dot.interviewing { background: var(--warning); opacity: 0.85; }
+.stage-dot.offer { background: var(--success); opacity: 0.85; }
+.stage-dot.nohire { background: var(--danger); opacity: 0.85; }
 
 /* Weekly History */
 .content-layout {
@@ -270,13 +279,12 @@ body {
   align-items: start;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .content-layout {
     grid-template-columns: 1fr;
   }
   .weekly-sidebar {
     order: -1;
-    position: static;
   }
 }
 
@@ -284,8 +292,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  position: sticky;
-  top: 20px;
 }
 
 .weekly-sidebar-section {
@@ -321,15 +327,15 @@ body {
 }
 
 .progress-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--gray-light);
-  transition: background-color 160ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  color: var(--text-muted);
 }
 
 .progress-dot.filled {
-  background: var(--success);
+  color: var(--success);
 }
 
 .week-summary-count {
@@ -464,7 +470,7 @@ body {
 .tracker-header {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px 12px;
   margin-bottom: 16px;
   align-items: center;
 }
@@ -473,6 +479,30 @@ body {
   font-size: 1.125rem;
   font-weight: 600;
   margin-right: auto;
+  width: 100%;
+}
+
+.tracker-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.tracker-controls .search-input {
+  flex: 1;
+  min-width: 150px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.filter-btn {
+  white-space: nowrap;
 }
 
 .search-input {
@@ -857,12 +887,12 @@ tr.notes-row td.date-cell {
   
   .dashboard { grid-template-columns: repeat(2, 1fr); }
   
-  .tracker-header {
+  .tracker-header h2 { width: 100%; }
+  .tracker-controls {
     flex-direction: column;
     align-items: stretch;
   }
-  
-  .filter-buttons { justify-content: center; }
+  .filter-buttons { justify-content: center; flex-wrap: wrap; }
   .search-input { min-width: auto; }
   
   th, td { padding: 8px 12px; font-size: 0.8rem; }
@@ -893,9 +923,9 @@ tr.notes-row td.date-cell {
         <span id="progress-remaining"></span>
       </div>
       <div class="progress-bar">
-        <div class="progress-segment" id="seg-1"></div>
-        <div class="progress-segment" id="seg-2"></div>
-        <div class="progress-segment" id="seg-3"></div>
+        <span class="progress-segment" id="seg-1"><i class="ph-bold ph-circle"></i></span>
+        <span class="progress-segment" id="seg-2"><i class="ph-bold ph-circle"></i></span>
+        <span class="progress-segment" id="seg-3"><i class="ph-bold ph-circle"></i></span>
       </div>
     </div>
     <div class="progress-status" id="progress-status"></div>
@@ -908,7 +938,7 @@ tr.notes-row td.date-cell {
       <div class="stat-card-value primary" id="stat-total">0</div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-label">Active Pipeline</div>
+      <div class="stat-card-label" title="All except No hire: Networking, Applied, Interviewing, Offer">Active Pipeline</div>
       <div class="stat-card-value success" id="stat-active">0</div>
     </div>
     <div class="stat-card">
@@ -933,14 +963,16 @@ tr.notes-row td.date-cell {
     <section class="tracker">
       <div class="tracker-header">
         <h2>Company Tracker</h2>
-        <input type="text" class="search-input" placeholder="Search company or role..." id="search-input" oninput="applyFilters()">
-        <div class="filter-buttons" id="filter-buttons">
-          <button class="filter-btn active" data-stage="all" onclick="setFilter('all')">All</button>
-          <button class="filter-btn" data-stage="Networking" onclick="setFilter('Networking')">Networking</button>
-          <button class="filter-btn" data-stage="Applied" onclick="setFilter('Applied')">Applied</button>
-          <button class="filter-btn" data-stage="Interviewing" onclick="setFilter('Interviewing')">Interviewing</button>
-          <button class="filter-btn" data-stage="Offer" onclick="setFilter('Offer')">Offer</button>
-          <button class="filter-btn" data-stage="No hire" onclick="setFilter('No hire')">No Hire</button>
+        <div class="tracker-controls">
+          <input type="text" class="search-input" placeholder="Search company or role..." id="search-input" oninput="applyFilters()">
+          <div class="filter-buttons" id="filter-buttons">
+            <button class="filter-btn active" data-stage="all" onclick="setFilter('all')">All</button>
+            <button class="filter-btn" data-stage="Networking" onclick="setFilter('Networking')">Networking</button>
+            <button class="filter-btn" data-stage="Applied" onclick="setFilter('Applied')">Applied</button>
+            <button class="filter-btn" data-stage="Interviewing" onclick="setFilter('Interviewing')">Interviewing</button>
+            <button class="filter-btn" data-stage="Offer" onclick="setFilter('Offer')">Offer</button>
+            <button class="filter-btn" data-stage="No hire" onclick="setFilter('No hire')">No Hire</button>
+          </div>
         </div>
       </div>
       <div class="table-container">
@@ -1401,7 +1433,10 @@ function renderWeeklyProgress() {
   document.getElementById('progress-count').textContent = `${count}/3 tasks`;
   
   for (let i = 1; i <= 3; i++) {
-    document.getElementById(`seg-${i}`).classList.toggle('filled', count >= i);
+    const seg = document.getElementById(`seg-${i}`);
+    const filled = count >= i;
+    seg.classList.toggle('filled', filled);
+    seg.innerHTML = filled ? '<i class="ph-bold ph-check-circle"></i>' : '<i class="ph-bold ph-circle"></i>';
   }
   
   const statusEl = document.getElementById('progress-status');
@@ -1475,7 +1510,8 @@ function renderWeekSummary(containerId, weekNum, isCurrent) {
   // Progress dots
   let dots = '';
   for (let i = 0; i < 3; i++) {
-    dots += `<span class="progress-dot ${i < count ? 'filled' : ''}"></span>`;
+    const filled = i < count;
+    dots += `<span class="progress-dot ${filled ? 'filled' : ''}"><i class="ph-bold ${filled ? 'ph-check-circle' : 'ph-circle'}"></i></span>`;
   }
 
   // Task list (compact)
