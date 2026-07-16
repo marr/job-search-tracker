@@ -843,7 +843,7 @@ tr.clickable { cursor: pointer; }
         <input type="hidden" id="entry-id">
         <div class="form-group">
           <label>Company *</label>
-          <input type="text" id="entry-company" required>
+          <input type="text" id="entry-company" required oninput="updateRoleSuggestions()">
         </div>
         <div class="form-group">
           <label>Date *</label>
@@ -1439,7 +1439,10 @@ function openLogModal(tab = 'application', companyId = null, applicationId = nul
   } else if (companyId) {
     // Pre-fill company name when adding from history
     dbGet('companies', companyId).then(c => {
-      if (c) document.getElementById('entry-company').value = c.name;
+      if (c) {
+        document.getElementById('entry-company').value = c.name;
+        updateRoleSuggestions();
+      }
     });
   }
   
