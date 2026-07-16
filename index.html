@@ -744,6 +744,7 @@ tr.clickable { cursor: pointer; }
   <header class="header">
     <h1>🎯 Job Search Tracker</h1>
     <div class="header-actions">
+      <button class="btn btn-primary" onclick="openEntryModal()">+ Add Application</button>
       <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
     </div>
   </header>
@@ -850,7 +851,7 @@ tr.clickable { cursor: pointer; }
 </div>
 
 <!-- Log Task Button -->
-<button class="log-task-btn" onclick="openTaskModal()">+ Log Weekly Task</button>
+<button class="log-task-btn" onclick="openTaskModal()">+ Log Task</button>
 
 <!-- Entry Modal -->
 <div class="modal-overlay" id="entry-modal">
