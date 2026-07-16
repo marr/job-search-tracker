@@ -247,31 +247,30 @@ body {
 
 .weekly-history-list {
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-}
-
-.week-card-wrapper {
-  flex: 0 0 auto;
-  min-width: 120px;
-  position: relative;
 }
 
 .week-card {
-  min-width: 120px;
-  padding: 12px;
+  padding: 12px 16px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
+  transition: transform 160ms var(--ease-out), box-shadow 160ms ease, background-color 160ms ease;
 }
 
-.week-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .week-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+  }
+}
+
+.week-card:active {
+  transform: scale(0.98);
 }
 
 /* Color states: blue=complete, amber=in-progress, gray=missed */
@@ -279,9 +278,9 @@ body {
 .week-card.week-in-progress { border-color: var(--warning); background: var(--warning-light); }
 .week-card.week-missed { border-color: var(--gray); background: var(--gray-light); }
 
-.week-card-number { font-size: 0.75rem; color: var(--text-muted); }
-.week-card-count { font-size: 1.125rem; font-weight: 700; margin: 4px 0; }
-.week-card-status { font-size: 0.75rem; font-weight: 500; }
+.week-card-number { font-size: 0.75rem; color: var(--text-muted); min-width: 50px; }
+.week-card-count { font-size: 0.875rem; font-weight: 600; flex: 1; }
+.week-card-status { font-size: 0.75rem; font-weight: 500; display: flex; align-items: center; gap: 4px; }
 .week-card-status.week-complete { color: #3b82f6; }
 .week-card-status.week-in-progress { color: var(--warning); }
 .week-card-status.week-missed { color: var(--gray); }
@@ -299,83 +298,42 @@ body {
 .week-status-dot.week-in-progress { background: var(--warning); }
 .week-status-dot.week-missed { background: var(--gray); }
 
-/* Hover Tooltip */
-.week-tooltip {
-  position: fixed;
-  z-index: 1000;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lg);
-  padding: 10px 14px;
-  font-size: 0.8125rem;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  max-width: 280px;
-}
-
-.week-tooltip.visible { opacity: 1; }
-
-.week-tooltip-header {
-  font-weight: 600;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.week-tooltip-count {
-  color: var(--text-muted);
-  font-size: 0.8125rem;
-}
-
-.week-tooltip-status {
-  font-weight: 500;
-  margin-top: 2px;
-}
-
-.week-tooltip-status.week-complete { color: #3b82f6; }
-.week-tooltip-status.week-in-progress { color: var(--warning); }
-.week-tooltip-status.week-missed { color: var(--gray); }
-
 /* Expanded Week Detail */
 .week-detail-panel {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 50%;
-  transform: translateX(-50%) scaleY(0.95);
-  transform-origin: top center;
-  z-index: 200;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--gray-light);
   border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lg);
-  min-width: 320px;
-  max-width: 420px;
-  max-height: 350px;
+  margin-top: 8px;
+  max-height: 0;
   opacity: 0;
   overflow: hidden;
-  pointer-events: none;
-  transition: transform 200ms var(--ease-out), opacity 200ms ease-out;
+  transition: max-height 200ms var(--ease-out), opacity 200ms ease-out, padding 200ms var(--ease-out);
+  padding: 0 12px;
 }
 
 .week-detail-panel.expanded {
-  transform: translateX(-50%) scaleY(1);
+  max-height: 400px;
   opacity: 1;
   overflow-y: auto;
-  pointer-events: auto;
+  padding: 12px;
 }
 
 .week-detail-header {
   font-weight: 600;
   font-size: 0.8125rem;
-  padding: 10px 12px 8px;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: var(--surface);
+  padding: 0 0 8px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+
+.week-detail-status {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.week-detail-status.week-complete { color: #3b82f6; }
+.week-detail-status.week-in-progress { color: var(--warning); }
+.week-detail-status.week-missed { color: var(--gray); }
 
 .week-task-item {
   display: flex;
@@ -446,9 +404,8 @@ body {
 }
 
 @media (max-width: 640px) {
-  .weekly-history-list { gap: 6px; }
-  .week-card { min-width: 100px; padding: 10px; }
-  .week-detail-panel { min-width: 260px; max-width: 320px; }
+  .week-card { padding: 10px 12px; }
+  .week-card-number { min-width: 40px; }
 }
 
 /* Tracker Section */
@@ -831,13 +788,6 @@ tr.clickable { cursor: pointer; }
     <h3>Weekly History (Eligibility)</h3>
     <div class="weekly-history-list" id="weekly-history"></div>
   </section>
-
-  <!-- Week Tooltip (global, repositioned on hover) -->
-  <div class="week-tooltip" id="week-tooltip">
-    <div class="week-tooltip-header" id="tooltip-header"></div>
-    <div class="week-tooltip-count" id="tooltip-count"></div>
-    <div class="week-tooltip-status" id="tooltip-status"></div>
-  </div>
 
   <!-- Tracker Table -->
   <section class="tracker">
@@ -1319,7 +1269,7 @@ function renderWeeklyHistory() {
     const isExpanded = weekNum === previousExpandedWeek;
 
     return `<div class="week-card-wrapper" data-week="${weekNum}">
-      <div class="week-card ${statusClass} ${isExpanded ? 'expanded' : ''}" data-week="${weekNum}" onclick="toggleWeekExpand(this, ${weekNum})" onmouseenter="showWeekTooltip(event, ${weekNum})" onmousemove="moveWeekTooltip(event)" onmouseleave="hideWeekTooltip()">
+      <div class="week-card ${statusClass} ${isExpanded ? 'expanded' : ''}" data-week="${weekNum}" onclick="toggleWeekExpand(this, ${weekNum})">
         <div class="week-card-number">Wk ${weekNum}</div>
         <div class="week-card-count">${count}/3 items</div>
         <div class="week-card-status ${statusClass}"><span class="week-status-dot ${statusClass}"></span>${statusText}</div>
@@ -1327,45 +1277,6 @@ function renderWeeklyHistory() {
       <div class="week-detail-panel ${isExpanded ? 'expanded' : ''}" id="week-detail-${weekNum}">${isExpanded ? renderWeekDetailContent(weekNum) : ''}</div>
     </div>`;
   }).join('');
-}
-
-// Tooltip
-let tooltipHideTimeout = null;
-
-function showWeekTooltip(event, weekNum) {
-  clearTimeout(tooltipHideTimeout);
-  const count = getWeeklyTaskCount(weekNum);
-  const isEligible = count >= 3;
-  const isCurrent = weekNum === state.currentWeek.week;
-  const isPast = weekNum < state.currentWeek.week;
-  const statusClass = isEligible ? 'week-complete' : isCurrent ? 'week-in-progress' : 'week-missed';
-  const statusText = isEligible ? 'Complete ✓' : isCurrent ? 'In progress' : isPast ? 'Missed' : 'No tasks';
-
-  document.getElementById('tooltip-header').innerHTML = `<span class="week-status-dot ${statusClass}"></span> Week ${weekNum}`;
-  document.getElementById('tooltip-count').textContent = `${count}/3 items for week ${weekNum}`;
-  const ts = document.getElementById('tooltip-status');
-  ts.className = 'week-tooltip-status ' + statusClass;
-  ts.textContent = statusText;
-
-  positionTooltip(event);
-  document.getElementById('week-tooltip').classList.add('visible');
-}
-
-function moveWeekTooltip(event) { positionTooltip(event); }
-
-function positionTooltip(event) {
-  const tooltip = document.getElementById('week-tooltip');
-  const margin = 12;
-  let x = event.clientX + margin, y = event.clientY + margin;
-  const rect = tooltip.getBoundingClientRect();
-  if (x + rect.width > window.innerWidth - margin) x = event.clientX - rect.width - margin;
-  if (y + rect.height > window.innerHeight - margin) y = event.clientY - rect.height - margin;
-  tooltip.style.left = x + 'px';
-  tooltip.style.top = y + 'px';
-}
-
-function hideWeekTooltip() {
-  tooltipHideTimeout = setTimeout(() => document.getElementById('week-tooltip').classList.remove('visible'), 100);
 }
 
 // Week Expansion
@@ -1411,7 +1322,10 @@ function renderWeekDetailContent(weekNum) {
   const statusClass = isEligible ? 'week-complete' : isCurrent ? 'week-in-progress' : 'week-missed';
   const statusText = isEligible ? 'Complete ✓' : isCurrent ? 'In progress' : isPast ? 'Missed' : '';
 
-  let html = `<div class="week-detail-header">Week ${weekNum} — ${count}/3 items <span class="week-tooltip-status ${statusClass}" style="margin-left:8px;">${statusText}</span></div>`;
+  let html = `<div class="week-detail-header">
+    <span>Week ${weekNum} — ${count}/3 items</span>
+    <span class="week-detail-status ${statusClass}">${statusText}</span>
+  </div>`;
 
   const jobTasks = getWeeklyJobTasks(weekNum);
   const standaloneTasks = getWeeklyStandaloneTasks(weekNum);
