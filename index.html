@@ -843,7 +843,8 @@ tr.clickable { cursor: pointer; }
         <input type="hidden" id="entry-id">
         <div class="form-group">
           <label>Company *</label>
-          <input type="text" id="entry-company" required oninput="updateRoleSuggestions()">
+          <input type="text" id="entry-company" required list="company-suggestions" oninput="updateCompanySuggestions(); updateRoleSuggestions()">
+          <datalist id="company-suggestions"></datalist>
         </div>
         <div class="form-group">
           <label>Date *</label>
@@ -1495,6 +1496,19 @@ function updateRoleRequired() {
   const stage = document.getElementById('entry-stage').value;
   document.getElementById('role-required').style.display = stage === 'Networking' ? 'none' : 'inline';
   document.getElementById('entry-role').placeholder = stage === 'Networking' ? 'Optional for networking' : '';
+}
+
+async function updateCompanySuggestions() {
+  const input = document.getElementById('entry-company').value.trim().toLowerCase();
+  const datalist = document.getElementById('company-suggestions');
+  
+  const companies = await Data.getCompanies();
+  const matches = companies
+    .filter(c => c.name.toLowerCase().includes(input))
+    .map(c => c.name)
+    .slice(0, 10); // Limit to 10 suggestions
+  
+  datalist.innerHTML = matches.map(name => `<option value="${name}">`).join('');
 }
 
 async function updateRoleSuggestions() {
