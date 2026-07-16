@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  (function() {
+    var theme = localStorage.getItem('theme');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', theme || (prefersDark ? 'dark' : 'light'));
+  })();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Job Search Tracker</title>
@@ -866,9 +873,9 @@ tr.notes-row td.date-cell {
 
 <div class="container">
   <header class="header">
-    <h1><i class="ph ph-crosshair" style="color: var(--primary);"></i> Job Search Tracker</h1>
+    <h1><i class="ph-bold ph-crosshair" style="color: var(--primary);"></i> Job Search Tracker</h1>
     <div class="header-actions">
-      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode"><i class="ph ph-sun"></i></button>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode"><i class="ph-bold ph-sun"></i></button>
       <button class="btn btn-primary" onclick="openLogModal()">+ Log Activity</button>
       <button class="btn btn-secondary" onclick="exportData()">↓ Export</button>
     </div>
@@ -1062,7 +1069,7 @@ tr.notes-row td.date-cell {
     <div class="modal-footer">
       <div class="modal-footer-left">
         <button class="btn btn-secondary" onclick="addEntryForCompany()">+ Add Entry</button>
-        <button class="btn btn-secondary" onclick="openCompanyNoteModal()"><i class="ph ph-note-pencil"></i> Add Note</button>
+        <button class="btn btn-secondary" onclick="openCompanyNoteModal()"><i class="ph-bold ph-note-pencil"></i> Add Note</button>
       </div>
       <div class="modal-footer-right">
         <button class="btn btn-secondary" onclick="closeHistoryModal()">Close</button>
@@ -1271,7 +1278,7 @@ function toggleTheme() {
 
 function updateThemeIcon() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  document.querySelector('.theme-toggle').innerHTML = isDark ? '<i class="ph ph-moon"></i>' : '<i class="ph ph-sun"></i>';
+  document.querySelector('.theme-toggle').innerHTML = isDark ? '<i class="ph-bold ph-moon"></i>' : '<i class="ph-bold ph-sun"></i>';
 }
 
 function initTheme() {
@@ -1400,16 +1407,16 @@ function renderWeeklyProgress() {
   const statusEl = document.getElementById('progress-status');
   if (count >= 3) {
     statusEl.className = 'progress-status eligible';
-    statusEl.innerHTML = '<i class="ph ph-check-circle" style="color: var(--success);"></i> Eligible — ' + count + ' tasks completed';
+    statusEl.innerHTML = '<i class="ph-bold ph-check-circle" style="color: var(--success);"></i> Eligible — ' + count + ' tasks completed';
   } else if (count === 2) {
     statusEl.className = 'progress-status warning';
-    statusEl.innerHTML = '<i class="ph ph-warning" style="color: var(--warning);"></i> 1 more task needed';
+    statusEl.innerHTML = '<i class="ph-bold ph-warning" style="color: var(--warning);"></i> 1 more task needed';
   } else if (count === 1) {
     statusEl.className = 'progress-status danger';
-    statusEl.innerHTML = '<i class="ph ph-warning" style="color: var(--danger);"></i> 2 more tasks needed';
+    statusEl.innerHTML = '<i class="ph-bold ph-warning" style="color: var(--danger);"></i> 2 more tasks needed';
   } else {
     statusEl.className = 'progress-status danger';
-    statusEl.innerHTML = '<i class="ph ph-warning-circle" style="color: var(--danger);"></i> No tasks logged this week';
+    statusEl.innerHTML = '<i class="ph-bold ph-warning-circle" style="color: var(--danger);"></i> No tasks logged this week';
   }
 }
 
@@ -1499,7 +1506,7 @@ function renderWeekDetailContent(weekNum) {
   const isCurrent = weekNum === state.currentWeek.week;
   const isPast = weekNum < state.currentWeek.week;
   const statusClass = isEligible ? 'week-complete' : isCurrent ? 'week-in-progress' : 'week-missed';
-  const statusText = isEligible ? '<i class="ph ph-check-circle"></i> Complete' : isCurrent ? 'In progress' : isPast ? 'Missed' : '';
+  const statusText = isEligible ? '<i class="ph-bold ph-check-circle"></i> Complete' : isCurrent ? 'In progress' : isPast ? 'Missed' : '';
 
   let html = `<div class="week-detail-header">
     <span>Week ${weekNum} — ${count}/3 items</span>
@@ -1516,7 +1523,7 @@ function renderWeekDetailContent(weekNum) {
   jobTasks.forEach(a => {
     const sc = a.stage.toLowerCase().replace(/\s+/g, '');
     html += `<div class="week-task-item">
-      <span class="week-task-icon"><i class="ph ph-file-text"></i></span>
+      <span class="week-task-icon"><i class="ph-bold ph-file-text"></i></span>
       <div class="week-task-info">
         <div class="week-task-company">${a.companyName}</div>
         <div class="week-task-role">${a.role || ''}</div>
@@ -1528,7 +1535,7 @@ function renderWeekDetailContent(weekNum) {
 
   standaloneTasks.forEach(t => {
     html += `<div class="week-standalone-item">
-      <span class="week-task-icon"><i class="ph ph-pencil-simple"></i></span>
+      <span class="week-task-icon"><i class="ph-bold ph-pencil-simple"></i></span>
       <div class="week-task-info">
         <div class="week-standalone-desc">${t.description}</div>
         <div class="week-task-date">${t.date}</div>
@@ -1611,7 +1618,7 @@ function renderTable() {
     rows.push(`
       <tr class="company-row" onclick="showCompanyHistory(${cv.company.id})">
         <td></td>
-        <td><strong>${cv.company.name}</strong>${appCount > 1 ? ` <span class="app-count">(${appCount})</span>` : ''}${cv.company.notes ? ' <i class="ph ph-note-pencil" style="font-size: 0.875rem; color: var(--text-muted);" title="Has a note"></i>' : ''}</td>
+        <td><strong>${cv.company.name}</strong>${appCount > 1 ? ` <span class="app-count">(${appCount})</span>` : ''}${cv.company.notes ? ' <i class="ph-bold ph-note-pencil" style="font-size: 0.875rem; color: var(--text-muted);" title="Has a note"></i>' : ''}</td>
         <td><span class="stage-badge ${appStage.toLowerCase().replace(' ', '')}">${appStage}</span></td>
         <td class="date-cell">${formatDateStr(date)}</td>
         <td>${role}</td>
