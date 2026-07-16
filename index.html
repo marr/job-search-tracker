@@ -212,6 +212,37 @@ body {
 .stat-card-value.warning { color: var(--warning); }
 .stat-card-value.danger { color: var(--danger); }
 
+.stat-card.celebrating {
+  border: 1px solid var(--success);
+  box-shadow: 0 0 12px rgba(102, 128, 11, 0.25);
+}
+
+[data-theme="dark"] .stat-card.celebrating {
+  box-shadow: 0 0 12px rgba(135, 154, 57, 0.3);
+}
+
+@keyframes celebrate-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(102, 128, 11, 0.2); }
+  50% { box-shadow: 0 0 16px rgba(102, 128, 11, 0.4); }
+}
+
+.stat-card.celebrating {
+  animation: celebrate-pulse 2s ease-in-out 3;
+}
+
+.offer-banner {
+  background: var(--success-light);
+  color: var(--success);
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Stage Breakdown */
 .stage-breakdown {
   background: var(--surface);
@@ -966,11 +997,14 @@ tr.notes-row td.date-cell {
       <div class="stat-card-label">Interviewing</div>
       <div class="stat-card-value warning" id="stat-interviewing">0</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-card-label">No Hires</div>
-      <div class="stat-card-value danger" id="stat-nohire">0</div>
+    <div class="stat-card" id="stat-offers-card">
+      <div class="stat-card-label" id="stat-offers-label">Offers</div>
+      <div class="stat-card-value success" id="stat-offers">0</div>
     </div>
   </section>
+
+  <!-- Offer Celebration Banner -->
+  <div class="offer-banner" id="offer-banner" style="display: none;"></div>
 
   <!-- Stage Breakdown -->
   <section class="stage-breakdown">
@@ -1482,10 +1516,28 @@ function renderWeeklyProgress() {
 
 function renderDashboard() {
   const apps = getAllApplications();
+  const offerCount = apps.filter(a => a.stage === 'Offer').length;
+  
   document.getElementById('stat-total').textContent = state.companyView.length;
   document.getElementById('stat-active').textContent = apps.filter(a => a.stage !== 'No hire').length;
   document.getElementById('stat-interviewing').textContent = apps.filter(a => a.stage === 'Interviewing').length;
-  document.getElementById('stat-nohire').textContent = apps.filter(a => a.stage === 'No hire').length;
+  document.getElementById('stat-offers').textContent = offerCount;
+  
+  // Celebration treatment
+  const card = document.getElementById('stat-offers-card');
+  const label = document.getElementById('stat-offers-label');
+  const banner = document.getElementById('offer-banner');
+  
+  if (offerCount > 0) {
+    card.classList.add('celebrating');
+    label.innerHTML = '<i class="ph-bold ph-trophy" style="color: var(--success);"></i> Offers';
+    banner.style.display = 'block';
+    banner.innerHTML = '<i class="ph-bold ph-star" style="color: var(--success);"></i> Congratulations! You have ' + offerCount + ' offer' + (offerCount !== 1 ? 's' : '') + ' — it only takes one yes.';
+  } else {
+    card.classList.remove('celebrating');
+    label.textContent = 'Offers';
+    banner.style.display = 'none';
+  }
 }
 
 function renderStageBreakdown() {
