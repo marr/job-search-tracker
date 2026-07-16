@@ -4,28 +4,53 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Job Search Tracker</title>
+<link rel="stylesheet" type="text/css" href="fonts/style.css" />
 <style>
 :root {
-  --bg: #f8f9fa;
-  --surface: #ffffff;
-  --text: #1a1a2e;
-  --text-muted: #6c757d;
-  --border: #e9ecef;
-  --primary: #4361ee;
-  --primary-light: #e8ecff;
-  --success: #2ec4b6;
-  --success-light: #e6f9f7;
-  --warning: #ff9f1c;
-  --warning-light: #fff3e0;
-  --danger: #e63946;
-  --danger-light: #fde8ea;
-  --gray: #868e96;
-  --gray-light: #f1f3f5;
-  --shadow: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
-  --radius: 12px;
-  --radius-sm: 8px;
+  --bg: #FFFCF0;
+  --bg-2: #F2F0E5;
+  --surface: #FFFFFF;
+  --text: #100F0F;
+  --text-muted: #6F6E69;
+  --border: #CECDC3;
+  --border-hover: #B7B5AC;
+  --primary: #205EA6;
+  --primary-light: #E1ECEB;
+  --success: #66800B;
+  --success-light: #EDEECF;
+  --warning: #AD8301;
+  --warning-light: #FAEEC6;
+  --danger: #AF3029;
+  --danger-light: #FFE1D5;
+  --gray: #878580;
+  --gray-light: #F2F0E5;
+  --shadow: 0 1px 3px rgba(16,15,15,0.06);
+  --shadow-lg: 0 4px 12px rgba(16,15,15,0.08);
+  --radius: 8px;
+  --radius-sm: 4px;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+[data-theme="dark"] {
+  --bg: #100F0F;
+  --bg-2: #1C1B1A;
+  --surface: #1C1B1A;
+  --text: #FFFCF0;
+  --text-muted: #878580;
+  --border: #403E3C;
+  --border-hover: #575653;
+  --primary: #4385BE;
+  --primary-light: #163B66;
+  --success: #879A39;
+  --success-light: #252D09;
+  --warning: #D0A215;
+  --warning-light: #3A2D04;
+  --danger: #D14D41;
+  --danger-light: #3E1715;
+  --gray: #6F6E69;
+  --gray-light: #1C1B1A;
+  --shadow: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -69,10 +94,10 @@ body {
   transition: all 0.2s;
 }
 
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: #3651d4; }
-.btn-secondary { background: var(--gray-light); color: var(--text); }
-.btn-secondary:hover { background: #e9ecef; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-secondary { background: var(--gray-light); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
 .btn-danger { background: var(--danger); color: white; }
 .btn-danger:hover { background: #c53030; }
 
@@ -244,6 +269,7 @@ body {
   }
   .weekly-sidebar {
     order: -1;
+    position: static;
   }
 }
 
@@ -448,9 +474,14 @@ body {
   border-radius: var(--radius-sm);
   font-size: 0.875rem;
   min-width: 200px;
+  background: var(--surface);
+  color: var(--text);
 }
 
-.search-input:focus { outline: none; border-color: var(--primary); }
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(32, 94, 166, 0.15); }
+
+[data-theme="dark"] .search-input:focus { box-shadow: 0 0 0 2px rgba(67, 133, 190, 0.25); }
 
 .filter-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
 
@@ -459,20 +490,63 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface);
+  color: var(--text);
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.filter-btn:hover { background: var(--gray-light); }
-.filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.filter-btn:hover { background: var(--gray-light); border-color: var(--border-hover); }
+.filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.filter-btn.active:hover { background: var(--primary); filter: brightness(1.1); }
 
-.sort-select {
-  padding: 8px 12px;
+.sort-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+}
+
+.sort-btn:hover {
+  color: var(--primary);
+}
+
+.sort-btn .sort-icon {
+  font-size: 0.625rem;
+  opacity: 0.4;
+}
+
+.sort-btn.active .sort-icon {
+  opacity: 1;
+  color: var(--primary);
+}
+
+.theme-toggle {
+  background: none;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  background: var(--surface);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.125rem;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+  background: var(--gray-light);
+  color: var(--text);
 }
 
 /* Table */
@@ -577,6 +651,26 @@ tr.notes-row td.date-cell {
   background: var(--gray-light);
   color: var(--text);
   border-color: var(--text-muted);
+}
+
+.notes-expanded a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: rgba(32, 94, 166, 0.3);
+  text-underline-offset: 2px;
+}
+
+.notes-expanded a:hover {
+  text-decoration-color: var(--primary);
+}
+
+[data-theme="dark"] .notes-expanded a {
+  color: var(--primary);
+  text-decoration-color: rgba(67, 133, 190, 0.3);
+}
+
+[data-theme="dark"] .notes-expanded a:hover {
+  text-decoration-color: var(--primary);
 }
 
 .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
@@ -772,10 +866,11 @@ tr.notes-row td.date-cell {
 
 <div class="container">
   <header class="header">
-    <h1>🎯 Job Search Tracker</h1>
+    <h1><i class="ph ph-crosshair" style="color: var(--primary);"></i> Job Search Tracker</h1>
     <div class="header-actions">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode"><i class="ph ph-sun"></i></button>
       <button class="btn btn-primary" onclick="openLogModal()">+ Log Activity</button>
-      <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
+      <button class="btn btn-secondary" onclick="exportData()">↓ Export</button>
     </div>
   </header>
 
@@ -840,21 +935,16 @@ tr.notes-row td.date-cell {
           <button class="filter-btn" data-stage="Offer" onclick="setFilter('Offer')">Offer</button>
           <button class="filter-btn" data-stage="No hire" onclick="setFilter('No hire')">No Hire</button>
         </div>
-        <select class="sort-select" id="sort-select" onchange="applyFilters()">
-          <option value="date-desc">Most Recent</option>
-          <option value="company-asc">Company A-Z</option>
-          <option value="stage-asc">Stage</option>
-        </select>
       </div>
       <div class="table-container">
         <table>
           <thead>
             <tr>
               <th></th>
-              <th>Company</th>
-              <th>Stage</th>
-              <th>Date</th>
-              <th>Primary Role</th>
+              <th><button class="sort-btn active" onclick="setSort('company-asc')">Company <span class="sort-icon">▲</span></button></th>
+              <th><button class="sort-btn" onclick="setSort('stage-asc')">Stage <span class="sort-icon">▲</span></button></th>
+              <th><button class="sort-btn active" onclick="setSort('date-desc')">Date <span class="sort-icon">▼</span></button></th>
+              <th>Role</th>
               <th>Notes</th>
               <th></th>
             </tr>
@@ -972,9 +1062,33 @@ tr.notes-row td.date-cell {
     <div class="modal-footer">
       <div class="modal-footer-left">
         <button class="btn btn-secondary" onclick="addEntryForCompany()">+ Add Entry</button>
+        <button class="btn btn-secondary" onclick="openCompanyNoteModal()"><i class="ph ph-note-pencil"></i> Add Note</button>
       </div>
       <div class="modal-footer-right">
         <button class="btn btn-secondary" onclick="closeHistoryModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Company Note Modal -->
+<div class="modal-overlay" id="company-note-modal">
+  <div class="modal" style="max-width: 400px;">
+    <div class="modal-header">
+      <h2 id="company-note-title">Company Note</h2>
+      <button class="btn-icon" onclick="closeCompanyNoteModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Note</label>
+        <textarea id="company-note-text" rows="4" placeholder="Add a note about this company..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-left"></div>
+      <div class="modal-footer-right">
+        <button class="btn btn-secondary" onclick="closeCompanyNoteModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveCompanyNote()">Save</button>
       </div>
     </div>
   </div>
@@ -1146,6 +1260,51 @@ let state = {
 };
 
 // ============================================================
+// Theme
+// ============================================================
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.querySelector('.theme-toggle').innerHTML = isDark ? '<i class="ph ph-moon"></i>' : '<i class="ph ph-sun"></i>';
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
+  updateThemeIcon();
+}
+
+// ============================================================
+// Sort
+// ============================================================
+function setSort(sortKey) {
+  // Toggle direction if same column
+  if (state.filters.sort === sortKey) {
+    state.filters.sort = sortKey.endsWith('-asc') ? sortKey.replace('-asc', '-desc') : sortKey.replace('-desc', '-asc');
+  } else {
+    state.filters.sort = sortKey;
+  }
+  
+  // Update sort button states
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    const btnSort = btn.getAttribute('onclick').match(/setSort\('(.+?)'\)/)?.[1];
+    const isActive = btnSort && state.filters.sort.startsWith(btnSort.split('-')[0]);
+    btn.classList.toggle('active', isActive);
+    const icon = btn.querySelector('.sort-icon');
+    if (icon) icon.textContent = isActive && state.filters.sort.endsWith('-desc') ? '▼' : '▲';
+  });
+  
+  renderTable();
+}
+
+// ============================================================
 // ISO Week Utilities
 // ============================================================
 function getISOWeekInfo(date) {
@@ -1241,16 +1400,16 @@ function renderWeeklyProgress() {
   const statusEl = document.getElementById('progress-status');
   if (count >= 3) {
     statusEl.className = 'progress-status eligible';
-    statusEl.innerHTML = '✓ Eligible — ' + count + ' tasks completed';
+    statusEl.innerHTML = '<i class="ph ph-check-circle" style="color: var(--success);"></i> Eligible — ' + count + ' tasks completed';
   } else if (count === 2) {
     statusEl.className = 'progress-status warning';
-    statusEl.innerHTML = '⚠ 1 more task needed';
+    statusEl.innerHTML = '<i class="ph ph-warning" style="color: var(--warning);"></i> 1 more task needed';
   } else if (count === 1) {
     statusEl.className = 'progress-status danger';
-    statusEl.innerHTML = '⚠ 2 more tasks needed';
+    statusEl.innerHTML = '<i class="ph ph-warning" style="color: var(--danger);"></i> 2 more tasks needed';
   } else {
     statusEl.className = 'progress-status danger';
-    statusEl.innerHTML = '⚠ No tasks logged this week';
+    statusEl.innerHTML = '<i class="ph ph-warning-circle" style="color: var(--danger);"></i> No tasks logged this week';
   }
 }
 
@@ -1340,7 +1499,7 @@ function renderWeekDetailContent(weekNum) {
   const isCurrent = weekNum === state.currentWeek.week;
   const isPast = weekNum < state.currentWeek.week;
   const statusClass = isEligible ? 'week-complete' : isCurrent ? 'week-in-progress' : 'week-missed';
-  const statusText = isEligible ? 'Complete ✓' : isCurrent ? 'In progress' : isPast ? 'Missed' : '';
+  const statusText = isEligible ? '<i class="ph ph-check-circle"></i> Complete' : isCurrent ? 'In progress' : isPast ? 'Missed' : '';
 
   let html = `<div class="week-detail-header">
     <span>Week ${weekNum} — ${count}/3 items</span>
@@ -1357,7 +1516,7 @@ function renderWeekDetailContent(weekNum) {
   jobTasks.forEach(a => {
     const sc = a.stage.toLowerCase().replace(/\s+/g, '');
     html += `<div class="week-task-item">
-      <span class="week-task-icon">📋</span>
+      <span class="week-task-icon"><i class="ph ph-file-text"></i></span>
       <div class="week-task-info">
         <div class="week-task-company">${a.companyName}</div>
         <div class="week-task-role">${a.role || ''}</div>
@@ -1369,7 +1528,7 @@ function renderWeekDetailContent(weekNum) {
 
   standaloneTasks.forEach(t => {
     html += `<div class="week-standalone-item">
-      <span class="week-task-icon">✏️</span>
+      <span class="week-task-icon"><i class="ph ph-pencil-simple"></i></span>
       <div class="week-task-info">
         <div class="week-standalone-desc">${t.description}</div>
         <div class="week-task-date">${t.date}</div>
@@ -1452,7 +1611,7 @@ function renderTable() {
     rows.push(`
       <tr class="company-row" onclick="showCompanyHistory(${cv.company.id})">
         <td></td>
-        <td><strong>${cv.company.name}</strong>${appCount > 1 ? ` <span class="app-count">(${appCount})</span>` : ''}</td>
+        <td><strong>${cv.company.name}</strong>${appCount > 1 ? ` <span class="app-count">(${appCount})</span>` : ''}${cv.company.notes ? ' <i class="ph ph-note-pencil" style="font-size: 0.875rem; color: var(--text-muted);" title="Has a note"></i>' : ''}</td>
         <td><span class="stage-badge ${appStage.toLowerCase().replace(' ', '')}">${appStage}</span></td>
         <td class="date-cell">${formatDateStr(date)}</td>
         <td>${role}</td>
@@ -1471,7 +1630,7 @@ function renderTable() {
       rows.push(`
         <tr class="notes-row">
           <td class="date-cell">${formatDateStr(date)}</td>
-          <td colspan="6" class="notes-expanded">${notes}</td>
+          <td colspan="6" class="notes-expanded">${linkify(notes)}</td>
         </tr>
       `);
     }
@@ -1496,7 +1655,6 @@ function setFilter(newStage) {
 
 function applyFilters() {
   state.filters.search = document.getElementById('search-input').value;
-  state.filters.sort = document.getElementById('sort-select').value;
   renderTable();
 }
 
@@ -1700,7 +1858,11 @@ async function showCompanyHistory(companyId) {
     `<span class="stage-badge ${currentStage.toLowerCase().replace(' ', '')}">${currentStage}</span>
      <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 8px;">as of ${latest.date}</span>`;
   
-  document.getElementById('history-entries').innerHTML = apps.map(a => `
+  // Show company note at top of history if exists
+  const companyNote = company.notes || '';
+  const noteHTML = companyNote ? `<div style="background: var(--gray-light); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px; font-size: 0.875rem; color: var(--text-muted); line-height: 1.5;">${companyNote}</div>` : '';
+  
+  document.getElementById('history-entries').innerHTML = noteHTML + apps.map(a => `
     <div class="history-entry">
       <div class="history-entry-header">
         <span class="stage-badge ${a.stage.toLowerCase().replace(' ', '')}">${a.stage}</span>
@@ -1743,6 +1905,46 @@ async function deleteApplication(id) {
 
 // ============================================================
 // ============================================================
+// Company Note Modal
+// ============================================================
+let companyNoteCompanyId = null;
+
+function openCompanyNoteModal() {
+  if (!currentHistoryCompanyId) return;
+  companyNoteCompanyId = currentHistoryCompanyId;
+  
+  // Get existing company note
+  dbGet('companies', companyNoteCompanyId).then(company => {
+    document.getElementById('company-note-title').textContent = `Note — ${company.name}`;
+    document.getElementById('company-note-text').value = company.notes || '';
+  });
+  
+  document.getElementById('company-note-modal').classList.add('active');
+}
+
+function closeCompanyNoteModal() {
+  document.getElementById('company-note-modal').classList.remove('active');
+  companyNoteCompanyId = null;
+}
+
+async function saveCompanyNote() {
+  if (!companyNoteCompanyId) return;
+  
+  const notes = document.getElementById('company-note-text').value.trim();
+  const company = await dbGet('companies', companyNoteCompanyId);
+  if (!company) return;
+  
+  company.notes = notes;
+  await dbPut('companies', company);
+  
+  closeCompanyNoteModal();
+  
+  // Refresh history modal to show updated note
+  if (currentHistoryCompanyId) await showCompanyHistory(currentHistoryCompanyId);
+  await renderAll();
+}
+
+// ============================================================
 // Weekly Tasks
 // ============================================================
 async function deleteTask(id) {
@@ -1777,6 +1979,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeLogModal();
     closeHistoryModal();
+    closeCompanyNoteModal();
   }
 });
 
@@ -1858,10 +2061,17 @@ async function migrateFromLocalStorage() {
 // Init
 // ============================================================
 (async function init() {
+  initTheme();
   await openDB();
   await migrateFromLocalStorage();
   await renderAll();
 })();
+
+function linkify(text) {
+  if (!text) return '';
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener" onclick="event.stopPropagation()">$1</a>');
+}
 </script>
 </body>
 </html>
