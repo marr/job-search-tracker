@@ -584,16 +584,7 @@ tr.clickable { cursor: pointer; }
 .form-group select:focus,
 .form-group textarea:focus { outline: none; border-color: var(--primary); }
 
-.form-group textarea { min-height: 80px; resize: vertical; }
-
-.star-rating { display: flex; gap: 4px; }
-
-.star {
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--gray-light);
-  transition: color 0.2s;
-}
+.form-group textarea { min-height: 60px; resize: vertical; }
 
 .star.active { color: var(--warning); }
 
@@ -607,52 +598,41 @@ tr.clickable { cursor: pointer; }
 .modal-footer-left { display: flex; gap: 8px; }
 .modal-footer-right { display: flex; gap: 8px; }
 
-/* Log Task Button */
-.log-task-btn {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  padding: 12px 20px;
-  background: var(--primary);
-  color: white;
+/* Log Modal Tabs */
+.log-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--gray-light);
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+}
+
+.log-tab {
+  flex: 1;
+  padding: 8px 16px;
   border: none;
-  border-radius: var(--radius);
+  border-radius: 6px;
+  background: transparent;
   font-size: 0.875rem;
   font-weight: 500;
+  color: var(--text-muted);
   cursor: pointer;
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 100;
+  transition: all 160ms var(--ease-out);
 }
 
-.log-task-btn:hover { background: #3651d4; }
-
-/* Task Log Modal */
-.task-list {
-  margin-top: 12px;
-  max-height: 200px;
-  overflow-y: auto;
+.log-tab:hover {
+  color: var(--text);
 }
 
-.task-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  margin-bottom: 8px;
-  font-size: 0.875rem;
+.log-tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
-.task-item-delete {
-  background: none;
-  border: none;
-  color: var(--danger);
-  cursor: pointer;
-  padding: 4px;
+.log-form {
+  min-height: 200px;
 }
 
 /* Company History Modal */
@@ -729,12 +709,6 @@ tr.clickable { cursor: pointer; }
   .search-input { min-width: auto; }
   
   th, td { padding: 8px 12px; font-size: 0.8rem; }
-  
-  .log-task-btn {
-    bottom: 16px;
-    right: 16px;
-    padding: 10px 16px;
-  }
 }
 </style>
 </head>
@@ -744,7 +718,7 @@ tr.clickable { cursor: pointer; }
   <header class="header">
     <h1>🎯 Job Search Tracker</h1>
     <div class="header-actions">
-      <button class="btn btn-primary" onclick="openEntryModal()">+ Add Application</button>
+      <button class="btn btn-primary" onclick="openLogModal()">+ Log Activity</button>
       <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
     </div>
   </header>
@@ -850,55 +824,66 @@ tr.clickable { cursor: pointer; }
   <footer class="footer" id="footer"></footer>
 </div>
 
-<!-- Log Task Button -->
-<button class="log-task-btn" onclick="openTaskModal()">+ Log Task</button>
-
-<!-- Entry Modal -->
-<div class="modal-overlay" id="entry-modal">
+<!-- Unified Log Modal -->
+<div class="modal-overlay" id="log-modal">
   <div class="modal">
     <div class="modal-header">
-      <h2 id="modal-title">Add Entry</h2>
-      <button class="btn-icon" onclick="closeEntryModal()">✕</button>
+      <h2>Log Activity</h2>
+      <button class="btn-icon" onclick="closeLogModal()">✕</button>
     </div>
     <div class="modal-body">
-      <input type="hidden" id="entry-id">
-      <div class="form-group">
-        <label>Company *</label>
-        <input type="text" id="entry-company" required>
+      <!-- Tabs -->
+      <div class="log-tabs">
+        <button class="log-tab active" data-tab="application" onclick="switchLogTab('application')">Application</button>
+        <button class="log-tab" data-tab="task" onclick="switchLogTab('task')">Weekly Task</button>
       </div>
-      <div class="form-group">
-        <label>Date *</label>
-        <input type="date" id="entry-date" required>
-      </div>
-      <div class="form-group">
-        <label>Stage</label>
-        <select id="entry-stage">
-          <option value="Networking">Networking</option>
-          <option value="Applied">Applied</option>
-          <option value="Interviewing">Interviewing</option>
-          <option value="Offer">Offer</option>
-          <option value="No hire">No Hire</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Role <span id="role-required" style="color: var(--danger);">*</span></label>
-        <input type="text" id="entry-role" list="role-suggestions">
-        <datalist id="role-suggestions"></datalist>
-      </div>
-      <div class="form-group">
-        <label>Score</label>
-        <div class="star-rating" id="star-rating">
-          <span class="star" data-score="1" onclick="setScore(1)">★</span>
-          <span class="star" data-score="2" onclick="setScore(2)">★</span>
-          <span class="star" data-score="3" onclick="setScore(3)">★</span>
-          <span class="star" data-score="4" onclick="setScore(4)">★</span>
-          <span class="star" data-score="5" onclick="setScore(5)">★</span>
+
+      <!-- Application Form -->
+      <div class="log-form" id="form-application">
+        <input type="hidden" id="entry-id">
+        <div class="form-group">
+          <label>Company *</label>
+          <input type="text" id="entry-company" required>
         </div>
-        <input type="hidden" id="entry-score" value="0">
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" id="entry-date" required>
+        </div>
+        <div class="form-group">
+          <label>Stage</label>
+          <select id="entry-stage">
+            <option value="Networking">Networking</option>
+            <option value="Applied">Applied</option>
+            <option value="Interviewing">Interviewing</option>
+            <option value="Offer">Offer</option>
+            <option value="No hire">No Hire</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Role <span id="role-required" style="color: var(--danger);">*</span></label>
+          <input type="text" id="entry-role" list="role-suggestions">
+          <datalist id="role-suggestions"></datalist>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="entry-notes" rows="2"></textarea>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Notes</label>
-        <textarea id="entry-notes"></textarea>
+
+      <!-- Task Form -->
+      <div class="log-form" id="form-task" style="display: none;">
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" id="task-date" required>
+        </div>
+        <div class="form-group">
+          <label>Description *</label>
+          <input type="text" id="task-description" placeholder="e.g., Updated resume, Networking event" required>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="task-notes" rows="2" placeholder="Optional details"></textarea>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -906,36 +891,8 @@ tr.clickable { cursor: pointer; }
         <button class="btn btn-danger" id="delete-btn" onclick="deleteEntry()" style="display: none;">Delete</button>
       </div>
       <div class="modal-footer-right">
-        <button class="btn btn-secondary" onclick="closeEntryModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveEntry()">Save</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Task Modal -->
-<div class="modal-overlay" id="task-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2>Log Weekly Task</h2>
-      <button class="btn-icon" onclick="closeTaskModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Date *</label>
-        <input type="date" id="task-date" required>
-      </div>
-      <div class="form-group">
-        <label>Description *</label>
-        <input type="text" id="task-description" placeholder="e.g., Updated resume, Networking event" required>
-      </div>
-      <div class="task-list" id="task-list"></div>
-    </div>
-    <div class="modal-footer">
-      <div class="modal-footer-left"></div>
-      <div class="modal-footer-right">
-        <button class="btn btn-secondary" onclick="closeTaskModal()">Close</button>
-        <button class="btn btn-primary" onclick="saveTask()">Add Task</button>
+        <button class="btn btn-secondary" onclick="closeLogModal()">Cancel</button>
+        <button class="btn btn-primary" id="log-save-btn" onclick="saveLogEntry()">Save</button>
       </div>
     </div>
   </div>
@@ -1453,46 +1410,87 @@ function applyFilters() {
 let editingApplicationId = null;
 let editingCompanyId = null;
 
-async function openEntryModal(companyId = null, applicationId = null) {
-  const modal = document.getElementById('entry-modal');
-  const title = document.getElementById('modal-title');
-  const deleteBtn = document.getElementById('delete-btn');
+// ============================================================
+// Unified Log Modal
+// ============================================================
+let currentLogTab = 'application';
+let editingApplicationId = null;
+let editingCompanyId = null;
+
+function openLogModal(tab = 'application', companyId = null, applicationId = null) {
+  const modal = document.getElementById('log-modal');
+  currentLogTab = tab;
   
+  // Reset forms
+  document.getElementById('entry-id').value = '';
+  document.getElementById('entry-company').value = '';
+  document.getElementById('entry-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('entry-stage').value = 'Applied';
+  document.getElementById('entry-role').value = '';
+  document.getElementById('entry-notes').value = '';
+  document.getElementById('task-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('task-description').value = '';
+  document.getElementById('task-notes').value = '';
+  document.getElementById('delete-btn').style.display = 'none';
+  editingApplicationId = null;
+  editingCompanyId = companyId;
+  
+  // Switch to the requested tab
+  switchLogTab(tab);
+  
+  // If editing an application, populate the form
   if (applicationId) {
-    const app = await dbGet('applications', applicationId);
-    if (!app) return;
-    editingApplicationId = applicationId;
-    editingCompanyId = app.companyId;
-    title.textContent = 'Edit Application';
-    deleteBtn.style.display = 'block';
-    document.getElementById('entry-company').value = (await dbGet('companies', app.companyId))?.name || '';
-    document.getElementById('entry-date').value = app.date;
-    document.getElementById('entry-stage').value = app.stage;
-    document.getElementById('entry-role').value = app.role || '';
-    document.getElementById('entry-score').value = app.score || 0;
-    document.getElementById('entry-notes').value = app.notes || '';
-    setScore(app.score || 0);
-  } else {
-    editingApplicationId = null;
-    editingCompanyId = companyId;
-    title.textContent = 'Add Application';
-    deleteBtn.style.display = 'none';
-    document.getElementById('entry-company').value = companyId ? (await dbGet('companies', companyId))?.name || '' : '';
-    document.getElementById('entry-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('entry-stage').value = 'Applied';
-    document.getElementById('entry-role').value = '';
-    document.getElementById('entry-score').value = '0';
-    document.getElementById('entry-notes').value = '';
-    setScore(0);
+    loadApplicationForEdit(applicationId);
+  } else if (companyId) {
+    // Pre-fill company name when adding from history
+    dbGet('companies', companyId).then(c => {
+      if (c) document.getElementById('entry-company').value = c.name;
+    });
   }
   
   modal.classList.add('active');
-  updateRoleRequired();
+}
+
+async function loadApplicationForEdit(applicationId) {
+  const app = await dbGet('applications', applicationId);
+  if (!app) return;
   
-  const companyInput = document.getElementById('entry-company');
-  companyInput.addEventListener('input', updateRoleSuggestions);
-  document.getElementById('entry-stage').addEventListener('change', updateRoleRequired);
-  if (companyInput.value) updateRoleSuggestions();
+  editingApplicationId = applicationId;
+  editingCompanyId = app.companyId;
+  
+  document.getElementById('entry-id').value = applicationId;
+  document.getElementById('entry-company').value = (await dbGet('companies', app.companyId))?.name || '';
+  document.getElementById('entry-date').value = app.date;
+  document.getElementById('entry-stage').value = app.stage;
+  document.getElementById('entry-role').value = app.role || '';
+  document.getElementById('entry-notes').value = app.notes || '';
+  document.getElementById('delete-btn').style.display = 'block';
+  
+  updateRoleRequired();
+  updateRoleSuggestions();
+}
+
+function switchLogTab(tab) {
+  currentLogTab = tab;
+  
+  // Update tab buttons
+  document.querySelectorAll('.log-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  
+  // Show/hide forms
+  document.getElementById('form-application').style.display = tab === 'application' ? 'block' : 'none';
+  document.getElementById('form-task').style.display = tab === 'task' ? 'block' : 'none';
+  
+  // Update delete button visibility
+  document.getElementById('delete-btn').style.display = 
+    (tab === 'application' && editingApplicationId) ? 'block' : 'none';
+}
+
+function closeLogModal() {
+  document.getElementById('log-modal').classList.remove('active');
+  editingApplicationId = null;
+  editingCompanyId = null;
 }
 
 function updateRoleRequired() {
@@ -1516,31 +1514,31 @@ async function updateRoleSuggestions() {
   datalist.innerHTML = roles.map(r => `<option value="${r}">`).join('');
 }
 
-function closeEntryModal() {
-  document.getElementById('entry-modal').classList.remove('active');
-  editingApplicationId = null;
-  editingCompanyId = null;
+async function saveLogEntry() {
+  if (currentLogTab === 'application') {
+    await saveApplication();
+  } else {
+    await saveWeeklyTask();
+  }
 }
 
-async function saveEntry() {
+async function saveApplication() {
   const company = document.getElementById('entry-company').value.trim();
   const date = document.getElementById('entry-date').value;
   const stage = document.getElementById('entry-stage').value;
   const role = document.getElementById('entry-role').value.trim();
-  const score = parseInt(document.getElementById('entry-score').value) || 0;
   const notes = document.getElementById('entry-notes').value.trim();
   
   if (!company || !date) { alert('Please fill in Company and Date'); return; }
   if (!role && stage !== 'Networking') { alert('Please fill in the Role field'); return; }
   
-  // Get or create company
   let companyId = editingCompanyId;
   if (!companyId) {
     const existing = await Data.getCompanyByName(company);
     companyId = existing?.id || await Data.addCompany(company);
   }
   
-  const appData = { companyId, date, stage, role, score, notes };
+  const appData = { companyId, date, stage, role, notes };
   
   if (editingApplicationId) {
     await Data.updateApplication({ id: editingApplicationId, ...appData });
@@ -1548,7 +1546,19 @@ async function saveEntry() {
     await Data.addApplication(appData);
   }
   
-  closeEntryModal();
+  closeLogModal();
+  await renderAll();
+}
+
+async function saveWeeklyTask() {
+  const date = document.getElementById('task-date').value;
+  const description = document.getElementById('task-description').value.trim();
+  const notes = document.getElementById('task-notes').value.trim();
+  
+  if (!date || !description) { alert('Please fill in Date and Description'); return; }
+  
+  await Data.addWeeklyTask({ date, description, notes });
+  closeLogModal();
   await renderAll();
 }
 
@@ -1557,15 +1567,8 @@ async function deleteEntry() {
   if (!confirm('Delete this application?')) return;
   
   await Data.deleteApplication(editingApplicationId);
-  closeEntryModal();
+  closeLogModal();
   await renderAll();
-}
-
-function setScore(score) {
-  document.getElementById('entry-score').value = score;
-  document.querySelectorAll('.star').forEach(star => {
-    star.classList.toggle('active', parseInt(star.dataset.score) <= score);
-  });
 }
 
 // ============================================================
@@ -1616,12 +1619,12 @@ function closeHistoryModal() {
 function addEntryForCompany() {
   const companyId = currentHistoryCompanyId;
   closeHistoryModal();
-  openEntryModal(companyId);
+  openLogModal('application', companyId);
 }
 
 async function editApplication(id) {
   closeHistoryModal();
-  await openEntryModal(null, id);
+  await openLogModal('application', null, id);
 }
 
 async function deleteApplication(id) {
@@ -1632,49 +1635,12 @@ async function deleteApplication(id) {
 }
 
 // ============================================================
-// Task Modal
 // ============================================================
-function openTaskModal() {
-  document.getElementById('task-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('task-description').value = '';
-  renderTaskList();
-  document.getElementById('task-modal').classList.add('active');
-}
-
-function closeTaskModal() { document.getElementById('task-modal').classList.remove('active'); }
-
-async function saveTask() {
-  const date = document.getElementById('task-date').value;
-  const description = document.getElementById('task-description').value.trim();
-  if (!date || !description) { alert('Please fill in date and description'); return; }
-  
-  await Data.addWeeklyTask({ date, description });
-  document.getElementById('task-description').value = '';
-  renderTaskList();
-  await renderAll();
-}
-
+// Weekly Tasks
+// ============================================================
 async function deleteTask(id) {
   await Data.deleteWeeklyTask(id);
-  renderTaskList();
   await renderAll();
-}
-
-function renderTaskList() {
-  const container = document.getElementById('task-list');
-  const currentWeekTasks = getWeeklyStandaloneTasks(state.currentWeek.week);
-  
-  if (currentWeekTasks.length === 0) {
-    container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.875rem;">No standalone tasks this week</div>';
-    return;
-  }
-  
-  container.innerHTML = currentWeekTasks.map(t => `
-    <div class="task-item">
-      <span>${t.description} — ${t.date}</span>
-      <button class="task-item-delete" onclick="deleteTask(${t.id})">✕</button>
-    </div>
-  `).join('');
 }
 
 // ============================================================
@@ -1702,8 +1668,7 @@ async function resetData() {
 // ============================================================
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    closeEntryModal();
-    closeTaskModal();
+    closeLogModal();
     closeHistoryModal();
   }
 });
