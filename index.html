@@ -284,6 +284,11 @@ body {
   align-items: start;
 }
 
+/* Allow grid items to shrink below their content's intrinsic width so the
+   table can scroll within its container and the sidebar can wrap instead of
+   forcing the whole layout wider than a narrow (mobile) viewport. */
+.content-layout > * { min-width: 0; }
+
 @media (max-width: 1100px) {
   .content-layout {
     grid-template-columns: 1fr;
@@ -526,6 +531,21 @@ body {
 [data-theme="dark"] .search-input:focus { box-shadow: 0 0 0 2px rgba(67, 133, 190, 0.25); }
 
 .filter-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* Compact stage filter shown in place of the button row on small screens. */
+.filter-select {
+  display: none;
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(32, 94, 166, 0.15); }
+[data-theme="dark"] .filter-select:focus { box-shadow: 0 0 0 2px rgba(67, 133, 190, 0.25); }
 
 .filter-btn {
   padding: 6px 12px;
@@ -909,14 +929,78 @@ tr.notes-row td.date-cell {
   .dashboard { grid-template-columns: repeat(2, 1fr); }
   
   .tracker-header h2 { width: 100%; }
+  /* Keep search + a compact filter dropdown on a single row instead of
+     letting the filter buttons wrap onto several lines. */
   .tracker-controls {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
   }
-  .filter-buttons { justify-content: center; flex-wrap: wrap; }
-  .search-input { min-width: auto; }
+  .tracker-controls .search-input { flex: 1; min-width: 0; }
+  .filter-buttons { display: none; }
+  .filter-select { display: block; }
   
   th, td { padding: 8px 12px; font-size: 0.8rem; }
+}
+
+/* Phones: the tracker table has too many columns to fit a phone screen without
+   forcing a horizontal scroll wider than the viewport, so stack each company
+   row into a labelled card instead. */
+@media (max-width: 600px) {
+  .table-container { overflow-x: visible; }
+  .table-container table,
+  .table-container tbody,
+  .table-container tr,
+  .table-container td { display: block; width: auto; }
+  .table-container thead { display: none; }
+
+  tr.company-row {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+  tr.company-row:hover { background: var(--surface); }
+
+  tr.company-row td {
+    border: none;
+    padding: 3px 0;
+    white-space: normal;
+    width: auto;
+    overflow-wrap: anywhere;
+  }
+  tr.company-row td:empty { display: none; }
+
+  tr.company-row td[data-label]::before {
+    content: attr(data-label);
+    display: inline-block;
+    min-width: 62px;
+    margin-right: 8px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+  }
+
+  tr.company-row td.company-cell {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  tr.company-row td.company-cell::before { content: none; }
+  tr.company-row td.notes-cell { text-align: left; }
+
+  tr.notes-row {
+    display: block;
+    margin: -6px 0 10px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  tr.notes-row td { display: block; border: none; }
+  tr.notes-row td.date-cell { display: none; }
+  tr.notes-row td.notes-expanded { overflow-wrap: anywhere; }
 }
 </style>
 </head>
@@ -994,6 +1078,14 @@ tr.notes-row td.date-cell {
             <button class="filter-btn" data-stage="Offer" onclick="setFilter('Offer')">Offer</button>
             <button class="filter-btn" data-stage="No hire" onclick="setFilter('No hire')">No Hire</button>
           </div>
+          <select class="filter-select" id="filter-select" aria-label="Filter by stage" onchange="setFilter(this.value)">
+            <option value="all">All stages</option>
+            <option value="Networking">Networking</option>
+            <option value="Applied">Applied</option>
+            <option value="Interviewing">Interviewing</option>
+            <option value="Offer">Offer</option>
+            <option value="No hire">No Hire</option>
+          </select>
         </div>
       </div>
       <div class="table-container">
@@ -1406,10 +1498,16 @@ async function loadData() {
     appMap[app.companyId].push(app);
   });
   
-  state.companyView = companies.map(c => ({
-    company: c,
-    applications: (appMap[c.id] || []).sort((a, b) => new Date(b.date) - new Date(a.date))
-  }));
+  state.companyView = companies
+    .map(c => ({
+      company: c,
+      applications: (appMap[c.id] || []).sort((a, b) => new Date(b.date) - new Date(a.date))
+    }))
+    // A company is only shown/counted while it has at least one application.
+    // Deleting a company's last application leaves an orphaned company record
+    // in storage; excluding it here keeps the dashboard counts, table, and
+    // footer accurate (an application-less company can't be opened anyway).
+    .filter(cv => cv.applications.length > 0);
 }
 
 function getAllApplications() {
@@ -1679,11 +1777,11 @@ function renderTable() {
     rows.push(`
       <tr class="company-row" onclick="showCompanyHistory(${cv.company.id})">
         <td></td>
-        <td><strong>${cv.company.name}</strong>${appCount > 1 ? ` <span class="app-count">(${appCount})</span>` : ''}${cv.company.notes ? ' <i class="ph-bold ph-note-pencil" style="font-size: 0.875rem; color: var(--text-muted);" title="Has a note"></i>' : ''}</td>
-        <td><span class="stage-badge ${appStage.toLowerCase().replace(' ', '')}">${appStage}</span></td>
-        <td class="date-cell">${formatDateStr(date)}</td>
-        <td>${role}</td>
-        <td class="notes-cell">
+        <td class="company-cell"><strong>${cv.company.name}</strong>${appCount > 1 ? ` <span class="app-count">(${appCount})</span>` : ''}${cv.company.notes ? ' <i class="ph-bold ph-note-pencil" style="font-size: 0.875rem; color: var(--text-muted);" title="Has a note"></i>' : ''}</td>
+        <td data-label="Stage"><span class="stage-badge ${appStage.toLowerCase().replace(' ', '')}">${appStage}</span></td>
+        <td class="date-cell" data-label="Date">${formatDateStr(date)}</td>
+        <td data-label="Role">${role}</td>
+        <td class="notes-cell" data-label="Notes">
           ${hasNotes ? 
             `<button class="notes-toggle" onclick="event.stopPropagation(); toggleNotes(${appId})">${isNotesExpanded ? '−' : '+'}</button>` 
             : ''
@@ -1718,6 +1816,8 @@ function setFilter(newStage) {
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.stage === newStage);
   });
+  const filterSelect = document.getElementById('filter-select');
+  if (filterSelect && filterSelect.value !== newStage) filterSelect.value = newStage;
   renderTable();
 }
 
