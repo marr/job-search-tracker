@@ -106,6 +106,12 @@ body {
   transition: all 0.2s;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .btn:active { transform: scale(0.97); }
+  .icon-btn:active { transform: scale(0.97); }
+  .filter-btn:active { transform: scale(0.97); }
+}
+
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-primary:hover { filter: brightness(1.1); }
 .btn-secondary { background: var(--gray-light); color: var(--text); border: 1px solid var(--border); }
@@ -196,6 +202,17 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 20px;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: card-enter 400ms var(--ease-out) forwards;
+}
+.stat-card:nth-child(1) { animation-delay: 0ms; }
+.stat-card:nth-child(2) { animation-delay: 60ms; }
+.stat-card:nth-child(3) { animation-delay: 120ms; }
+.stat-card:nth-child(4) { animation-delay: 180ms; }
+
+@keyframes card-enter {
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .stat-card-label {
@@ -660,6 +677,7 @@ th {
   top: 0;
 }
 
+tr { transition: background 120ms ease-out; }
 tr:hover { background: var(--gray-light); }
 tr.clickable { cursor: pointer; }
 
@@ -769,14 +787,21 @@ tr.notes-row td.date-cell {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.5);
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease-out, visibility 0s 200ms;
 }
 
-.modal-overlay.active { display: flex; }
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 250ms var(--ease-out), visibility 0s;
+}
 
 .modal {
   background: var(--surface);
@@ -786,6 +811,14 @@ tr.notes-row td.date-cell {
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 250ms var(--ease-out), transform 250ms var(--ease-out);
+}
+
+.modal-overlay.active .modal {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .modal-header {
@@ -2211,11 +2244,12 @@ const dropOverlay = document.createElement('div');
 dropOverlay.id = 'drop-overlay';
 dropOverlay.innerHTML = '<i class="ph-bold ph-upload-simple" style="font-size:2rem"></i><span>Drop JSON to import</span>';
 Object.assign(dropOverlay.style, {
-  display: 'none', position: 'fixed', inset: '0', zIndex: '9999',
+  position: 'fixed', inset: '0', zIndex: '9999',
   background: 'rgba(0,0,0,0.6)', color: '#fff',
   flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
   gap: '8px', fontSize: '1rem', fontWeight: '600',
-  pointerEvents: 'none'
+  pointerEvents: 'none', opacity: '0',
+  transition: 'opacity 200ms ease-out'
 });
 document.body.appendChild(dropOverlay);
 
@@ -2223,17 +2257,23 @@ let dragCounter = 0;
 document.addEventListener('dragenter', (e) => {
   e.preventDefault();
   dragCounter++;
-  dropOverlay.style.display = 'flex';
+  dropOverlay.style.opacity = '1';
+  dropOverlay.style.pointerEvents = 'auto';
 });
 document.addEventListener('dragleave', () => {
   dragCounter--;
-  if (dragCounter <= 0) { dropOverlay.style.display = 'none'; dragCounter = 0; }
+  if (dragCounter <= 0) {
+    dropOverlay.style.opacity = '0';
+    dropOverlay.style.pointerEvents = 'none';
+    dragCounter = 0;
+  }
 });
 document.addEventListener('dragover', (e) => e.preventDefault());
 document.addEventListener('drop', async (e) => {
   e.preventDefault();
   dragCounter = 0;
-  dropOverlay.style.display = 'none';
+  dropOverlay.style.opacity = '0';
+  dropOverlay.style.pointerEvents = 'none';
   const file = e.dataTransfer.files[0];
   if (file && file.name.endsWith('.json')) await importFromFile(file);
 });
