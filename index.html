@@ -75,6 +75,8 @@ body {
   min-height: 100vh;
 }
 
+body.log-modal-open { overflow: hidden; }
+
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px 20px; }
 
 /* Header */
@@ -1001,6 +1003,33 @@ tr.notes-row td.date-cell {
   .filter-select { display: block; }
   
   th, td { padding: 8px 12px; font-size: 0.8rem; }
+
+  /* Log Activity: full-page flow instead of a centered modal */
+  #log-modal.modal-overlay {
+    padding: 0;
+    background: var(--surface);
+  }
+
+  #log-modal.modal-overlay.active .modal {
+    max-width: none;
+    max-height: none;
+    height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  #log-modal .modal-body {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  #log-modal .modal-footer {
+    flex-shrink: 0;
+  }
 }
 
 /* Phones: the tracker table has too many columns to fit a phone screen without
@@ -1950,6 +1979,7 @@ function openLogModal(tab = 'application', companyId = null, applicationId = nul
   }
   
   modal.classList.add('active');
+  document.body.classList.add('log-modal-open');
 }
 
 async function loadApplicationForEdit(applicationId) {
@@ -1990,6 +2020,7 @@ function switchLogTab(tab) {
 
 function closeLogModal() {
   document.getElementById('log-modal').classList.remove('active');
+  document.body.classList.remove('log-modal-open');
   editingApplicationId = null;
   editingCompanyId = null;
 }
@@ -2288,7 +2319,11 @@ document.addEventListener('keydown', (e) => {
 
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
   overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.classList.remove('active');
+    if (e.target !== overlay) return;
+    if (overlay.id === 'log-modal') closeLogModal();
+    else if (overlay.id === 'history-modal') closeHistoryModal();
+    else if (overlay.id === 'company-note-modal') closeCompanyNoteModal();
+    else overlay.classList.remove('active');
   });
 });
 
