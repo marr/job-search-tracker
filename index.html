@@ -2463,7 +2463,22 @@ async function importFromFile(file) {
     alert('Invalid JSON file.');
     return;
   }
-  if (!confirm('Import will replace all current data. Continue?')) return;
+  
+  // Auto-backup if there's existing data
+  const existingCompanies = await Data.getCompanies();
+  const existingApps = await Data.getApplications();
+  if (existingCompanies.length > 0 || existingApps.length > 0) {
+    const backup = await Data.exportAll();
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `job-tracker-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  
+  if (!confirm('Import will replace all current data (backup downloaded). Continue?')) return;
   await Data.importAll(data);
   await renderAll();
   alert('Import complete!');
