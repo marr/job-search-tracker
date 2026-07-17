@@ -1043,9 +1043,7 @@ tr.notes-row td.date-cell {
     <div class="header-actions">
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode"><i class="ph-bold ph-sun"></i></button>
       <button class="btn btn-primary" onclick="openLogModal()"><i class="ph-bold ph-plus"></i> Log Activity</button>
-      <button class="btn btn-secondary" onclick="exportData()"><i class="ph-bold ph-download-simple"></i> Export</button>
-      <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()"><i class="ph-bold ph-upload-simple"></i> Import</button>
-      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
+      <button class="theme-toggle" onclick="exportData()" title="Export data"><i class="ph-bold ph-download-simple"></i></button>
     </div>
   </header>
 
@@ -2188,26 +2186,19 @@ async function exportData() {
   URL.revokeObjectURL(url);
 }
 
-async function importData(input) {
-  const file = input.files[0];
-  if (!file) return;
+async function importFromFile(file) {
   const text = await file.text();
   let data;
   try {
     data = JSON.parse(text);
   } catch {
     alert('Invalid JSON file.');
-    input.value = '';
     return;
   }
-  if (!confirm('Import will replace all current data. Continue?')) {
-    input.value = '';
-    return;
-  }
+  if (!confirm('Import will replace all current data. Continue?')) return;
   await Data.importAll(data);
   await renderAll();
   alert('Import complete!');
-  input.value = '';
 }
 
 async function resetData() {
@@ -2219,6 +2210,38 @@ async function resetData() {
 // ============================================================
 // Keyboard & Click Handlers
 // ============================================================
+// Drag & Drop Import
+const dropOverlay = document.createElement('div');
+dropOverlay.id = 'drop-overlay';
+dropOverlay.innerHTML = '<i class="ph-bold ph-upload-simple" style="font-size:2rem"></i><span>Drop JSON to import</span>';
+Object.assign(dropOverlay.style, {
+  display: 'none', position: 'fixed', inset: '0', zIndex: '9999',
+  background: 'rgba(0,0,0,0.6)', color: '#fff',
+  flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+  gap: '8px', fontSize: '1rem', fontWeight: '600',
+  pointerEvents: 'none'
+});
+document.body.appendChild(dropOverlay);
+
+let dragCounter = 0;
+document.addEventListener('dragenter', (e) => {
+  e.preventDefault();
+  dragCounter++;
+  dropOverlay.style.display = 'flex';
+});
+document.addEventListener('dragleave', () => {
+  dragCounter--;
+  if (dragCounter <= 0) { dropOverlay.style.display = 'none'; dragCounter = 0; }
+});
+document.addEventListener('dragover', (e) => e.preventDefault());
+document.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  dragCounter = 0;
+  dropOverlay.style.display = 'none';
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.json')) await importFromFile(file);
+});
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeLogModal();
