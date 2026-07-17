@@ -1044,6 +1044,8 @@ tr.notes-row td.date-cell {
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode"><i class="ph-bold ph-sun"></i></button>
       <button class="btn btn-primary" onclick="openLogModal()"><i class="ph-bold ph-plus"></i> Log Activity</button>
       <button class="btn btn-secondary" onclick="exportData()"><i class="ph-bold ph-download-simple"></i> Export</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()"><i class="ph-bold ph-upload-simple"></i> Import</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
     </div>
   </header>
 
@@ -2184,6 +2186,28 @@ async function exportData() {
   a.download = 'job-tracker-export.json';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+async function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const text = await file.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    alert('Invalid JSON file.');
+    input.value = '';
+    return;
+  }
+  if (!confirm('Import will replace all current data. Continue?')) {
+    input.value = '';
+    return;
+  }
+  await Data.importAll(data);
+  await renderAll();
+  alert('Import complete!');
+  input.value = '';
 }
 
 async function resetData() {
