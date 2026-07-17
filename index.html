@@ -1008,12 +1008,17 @@ tr.notes-row td.date-cell {
   #log-modal.modal-overlay {
     padding: 0;
     background: var(--surface);
+    align-items: stretch;
+    justify-content: stretch;
   }
 
   #log-modal.modal-overlay.active .modal {
+    position: fixed;
+    inset: 0;
+    width: 100%;
     max-width: none;
     max-height: none;
-    height: 100%;
+    height: auto;
     border-radius: 0;
     box-shadow: none;
     display: flex;
