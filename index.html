@@ -1498,10 +1498,16 @@ async function loadData() {
     appMap[app.companyId].push(app);
   });
   
-  state.companyView = companies.map(c => ({
-    company: c,
-    applications: (appMap[c.id] || []).sort((a, b) => new Date(b.date) - new Date(a.date))
-  }));
+  state.companyView = companies
+    .map(c => ({
+      company: c,
+      applications: (appMap[c.id] || []).sort((a, b) => new Date(b.date) - new Date(a.date))
+    }))
+    // A company is only shown/counted while it has at least one application.
+    // Deleting a company's last application leaves an orphaned company record
+    // in storage; excluding it here keeps the dashboard counts, table, and
+    // footer accurate (an application-less company can't be opened anyway).
+    .filter(cv => cv.applications.length > 0);
 }
 
 function getAllApplications() {
