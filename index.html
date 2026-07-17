@@ -955,9 +955,11 @@ tr.notes-row td.date-cell {
 
 <div class="container">
   <header class="header">
-    <h1><i class="ph-bold ph-crosshair" style="color: var(--primary);"></i> Job Search Tracker</h1>
-    <div class="header-actions">
+    <div style="display:flex;align-items:center;gap:12px">
       <button class="theme-toggle" onclick="exportData()" title="Export data"><i class="ph-bold ph-download-simple"></i></button>
+      <h1><i class="ph-bold ph-crosshair" style="color: var(--primary);"></i> Job Search Tracker</h1>
+    </div>
+    <div class="header-actions">
       <button class="btn btn-primary" onclick="openLogModal()"><i class="ph-bold ph-plus"></i> Log Activity</button>
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode"><i class="ph-bold ph-sun"></i></button>
     </div>
