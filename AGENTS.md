@@ -19,3 +19,5 @@ tests, linters, or CI build scripts in the repo.
   in-repo unless it is added.
 - **External resources:** the page also references the Inter font via Google Fonts CDN;
   the core app still works offline/without it (falls back to system fonts).
+- **Verify setup:** after the dev server is running, `curl -sf http://localhost:8000/index.html > /dev/null`
+  should exit 0. Open `http://localhost:8000/index.html` in a browser to smoke-test UI.
