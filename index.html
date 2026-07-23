@@ -1643,7 +1643,8 @@ function formatDate(date) {
 }
 
 function getISOWeekNumber(dateStr) {
-  return getISOWeekInfo(new Date(dateStr + 'T00:00:00')).week;
+  const d = dateStr.includes('T') ? new Date(dateStr) : new Date(dateStr + 'T00:00:00');
+  return getISOWeekInfo(d).week;
 }
 
 // ============================================================
@@ -2055,8 +2056,9 @@ function openWeeklyLogModal() {
     html += '<div style="text-align: center; padding: 40px; color: var(--text-muted);">No activities logged this week</div>';
   } else {
     Object.entries(byDate).forEach(([date, activities]) => {
-      const dayName = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' });
-      const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      const dateObj = date.includes('T') ? new Date(date) : new Date(date + 'T00:00:00');
+      const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+      const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
       
       html += `<div style="margin-bottom: 16px;">
         <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 8px;">${dayName}, ${formattedDate}</div>
