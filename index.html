@@ -430,11 +430,67 @@ body.log-modal-open { overflow: hidden; }
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.task-pill:hover {
+  background: var(--primary);
+  color: white;
 }
 
 .task-pill.standalone {
   background: var(--gray-light);
   color: var(--text-muted);
+}
+
+.task-pill.standalone:hover {
+  background: var(--text-muted);
+  color: white;
+}
+
+.week-detail-tasks {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  display: none;
+}
+
+.week-detail-tasks.expanded {
+  display: block;
+}
+
+.week-detail-task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 0.75rem;
+}
+
+.week-detail-task-name {
+  color: var(--text);
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.week-detail-task-date {
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+.week-expand-hint {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 4px;
+  opacity: 0.7;
 }
 
 .week-detail-status {
@@ -1112,9 +1168,10 @@ tr.notes-row td.date-cell {
 
   <!-- Weekly Progress Banner -->
   <section class="weekly-banner">
-    <div class="weekly-banner-header">
-      <h2 id="weekly-title">Week — Loading...</h2>
+    <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
+      <h2 id="weekly-title" style="margin-right: auto;">Week — Loading...</h2>
       <span class="weekly-date" id="weekly-date-range"></span>
+      <button class="btn btn-secondary" style="font-size: 0.8125rem; margin-left: auto; white-space: nowrap;" onclick="openWeeklyLogModal()"><i class="ph-bold ph-file-text"></i> Activity Log</button>
     </div>
     <div class="progress-container">
       <div class="progress-label">
@@ -1244,7 +1301,7 @@ tr.notes-row td.date-cell {
         </div>
         <div class="form-group">
           <label>Date *</label>
-          <input type="date" id="entry-date" required>
+          <input type="datetime-local" id="entry-date" required>
         </div>
         <div class="form-group">
           <label>Stage</label>
@@ -1271,7 +1328,7 @@ tr.notes-row td.date-cell {
       <div class="log-form" id="form-task" style="display: none;">
         <div class="form-group">
           <label>Date *</label>
-          <input type="date" id="task-date" required>
+          <input type="datetime-local" id="task-date" required>
         </div>
         <div class="form-group">
           <label>Description *</label>
@@ -1315,6 +1372,24 @@ tr.notes-row td.date-cell {
       </div>
       <div class="modal-footer-right">
         <button class="btn btn-secondary" onclick="closeHistoryModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Weekly Activity Log Modal -->
+<div class="modal-overlay" id="weekly-log-modal">
+  <div class="modal" style="max-width: 650px;">
+    <div class="modal-header">
+      <h2>Weekly Activity Log</h2>
+      <button class="btn-icon" onclick="closeWeeklyLogModal()">✕</button>
+    </div>
+    <div class="modal-body" id="weekly-log-content">
+      <!-- Content populated by JS -->
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-right">
+        <button class="btn btn-secondary" onclick="closeWeeklyLogModal()">Close</button>
       </div>
     </div>
   </div>
@@ -1491,7 +1566,9 @@ const Data = {
   
   async importAll(data) {
     await this.resetAll();
-    for (const c of data.companies || []) { const { id, ...rest } = c; await dbAdd('companies', rest); }
+    // Use dbPut for companies to preserve original IDs,
+    // so application companyId references stay valid
+    for (const c of data.companies || []) { await dbPut('companies', c); }
     for (const a of data.applications || []) { const { id, ...rest } = a; await dbAdd('applications', rest); }
     for (const t of data.weeklyTasks || []) { const { id, ...rest } = t; await dbAdd('weeklyTasks', rest); }
   }
@@ -1752,14 +1829,30 @@ function renderWeekSummary(containerId, weekNum, isCurrent) {
     dots += `<span class="progress-dot ${filled ? 'filled' : ''}"><i class="ph-bold ${filled ? 'ph-check-circle' : 'ph-circle'}"></i></span>`;
   }
 
-  // Task list (compact)
-  let taskList = '';
+  // Task pills (compact, clickable)
+  let taskPills = '';
+  let taskDetails = '';
   if (totalTasks > 0) {
     const items = [
-      ...jobTasks.map(a => `<span class="task-pill">${a.companyName}</span>`),
-      ...standaloneTasks.map(t => `<span class="task-pill standalone">${t.description}</span>`)
+      ...jobTasks.map(a => `<span class="task-pill" onclick="toggleWeekDetails('${containerId}')">${a.companyName}</span>`),
+      ...standaloneTasks.map(t => `<span class="task-pill standalone" onclick="toggleWeekDetails('${containerId}')">${t.description}</span>`)
     ];
-    taskList = `<div class="task-pills">${items.join('')}</div>`;
+    taskPills = `<div class="task-pills">${items.join('')}</div>`;
+
+    // Detail list with dates
+    const allTasks = [
+      ...jobTasks.map(a => ({ name: a.companyName, date: a.date, type: 'job' })),
+      ...standaloneTasks.map(t => ({ name: t.description, date: t.date, type: 'task' }))
+    ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    taskDetails = `<div class="week-detail-tasks" id="week-details-${containerId}">
+      ${allTasks.map(t => `
+        <div class="week-detail-task-item">
+          <span class="week-detail-task-name">${t.name}</span>
+          <span class="week-detail-task-date">${formatDateStr(t.date)}</span>
+        </div>
+      `).join('')}
+    </div>`;
   }
 
   container.innerHTML = `
@@ -1769,9 +1862,22 @@ function renderWeekSummary(containerId, weekNum, isCurrent) {
         <span class="week-summary-count">${count}/3</span>
       </div>
       <div class="week-summary-status ${statusClass}">${statusText}</div>
-      ${taskList}
+      ${taskPills}
+      ${taskDetails}
+      ${totalTasks > 0 ? '<div class="week-expand-hint">click to ' + `<span id="week-hint-${containerId}">show</span>` + ' dates</div>' : ''}
     </div>
   `;
+}
+
+function toggleWeekDetails(containerId) {
+  const details = document.getElementById(`week-details-${containerId}`);
+  const hint = document.getElementById(`week-hint-${containerId}`);
+  if (details) {
+    details.classList.toggle('expanded');
+    if (hint) {
+      hint.textContent = details.classList.contains('expanded') ? 'hide' : 'show';
+    }
+  }
 }
 
 function renderWeekDetailContent(weekNum) {
@@ -1801,7 +1907,7 @@ function renderWeekDetailContent(weekNum) {
       <div class="week-task-info">
         <div class="week-task-company">${a.companyName}</div>
         <div class="week-task-role">${a.role || ''}</div>
-        <div class="week-task-date">${a.date}</div>
+        <div class="week-task-date">${formatDateStr(a.date)}</div>
       </div>
       <span class="week-task-stage ${sc}">${a.stage}</span>
     </div>`;
@@ -1812,7 +1918,7 @@ function renderWeekDetailContent(weekNum) {
       <span class="week-task-icon"><i class="ph-bold ph-pencil-simple"></i></span>
       <div class="week-task-info">
         <div class="week-standalone-desc">${t.description}</div>
-        <div class="week-task-date">${t.date}</div>
+        <div class="week-task-date">${formatDateStr(t.date)}</div>
       </div>
     </div>`;
   });
@@ -1822,8 +1928,14 @@ function renderWeekDetailContent(weekNum) {
 
 function formatDateStr(dateStr) {
   if (!dateStr || dateStr === '—') return '—';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  // Handle both date-only (YYYY-MM-DD) and datetime (YYYY-MM-DDTHH:MM) formats
+  const d = dateStr.includes('T') ? new Date(dateStr) : new Date(dateStr + 'T00:00:00');
+  const hasTime = dateStr.includes('T');
+  return d.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric',
+    ...(hasTime ? { hour: 'numeric', minute: '2-digit' } : {}) 
+  });
 }
 
 function toggleNotes(appId) {
@@ -1925,6 +2037,110 @@ function renderFooter() {
     `Job Search Tracker • ${state.companyView.length} companies • Last updated: ${new Date().toLocaleDateString()}`;
 }
 
+// ============================================================
+// Weekly Activity Log
+// ============================================================
+function openWeeklyLogModal() {
+  const modal = document.getElementById('weekly-log-modal');
+  const content = document.getElementById('weekly-log-content');
+  
+  const week = state.currentWeek;
+  const count = getWeeklyTaskCount(week.week);
+  
+  // Get all activities for this week
+  const jobTasks = getWeeklyJobTasks(week.week);
+  const standaloneTasks = getWeeklyStandaloneTasks(week.week);
+  
+  // Combine and sort by date
+  const allActivities = [
+    ...jobTasks.map(a => ({
+      type: 'application',
+      date: a.date,
+      company: a.companyName,
+      role: a.role || '',
+      stage: a.stage,
+      notes: a.notes || ''
+    })),
+    ...standaloneTasks.map(t => ({
+      type: 'task',
+      date: t.date,
+      description: t.description,
+      notes: t.notes || ''
+    }))
+  ].sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  // Group by date
+  const byDate = {};
+  allActivities.forEach(a => {
+    if (!byDate[a.date]) byDate[a.date] = [];
+    byDate[a.date].push(a);
+  });
+  
+  const isEligible = count >= 3;
+  const statusClass = isEligible ? 'eligible' : 'warning';
+  const statusText = isEligible ? '✓ Meets Weekly Requirement' : `${count}/3 activities logged — ${3 - count} more needed`;
+  
+  let html = `
+    <div style="margin-bottom: 20px; padding: 16px; background: var(--gray-light); border-radius: var(--radius);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <strong>Week ${week.week}</strong>
+        <span style="font-size: 0.875rem; color: var(--text-muted);">${formatDate(week.monday)} – ${formatDate(week.sunday)}</span>
+      </div>
+      <div class="progress-status ${statusClass}" style="font-size: 0.875rem;">
+        <i class="ph-bold ${isEligible ? 'ph-check-circle' : 'ph-warning'}"></i> ${statusText}
+      </div>
+    </div>
+  `;
+  
+  if (allActivities.length === 0) {
+    html += '<div style="text-align: center; padding: 40px; color: var(--text-muted);">No activities logged this week</div>';
+  } else {
+    Object.entries(byDate).forEach(([date, activities]) => {
+      const dayName = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+      const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      
+      html += `<div style="margin-bottom: 16px;">
+        <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 8px;">${dayName}, ${formattedDate}</div>
+      `;
+      
+      activities.forEach(a => {
+        if (a.type === 'application') {
+          const sc = a.stage.toLowerCase().replace(/\s+/g, '');
+          html += `<div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px;">
+            <i class="ph-bold ph-buildings" style="color: var(--primary); margin-top: 2px;"></i>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 500; margin-bottom: 2px;">${a.company}</div>
+              ${a.role ? `<div style="font-size: 0.8125rem; color: var(--text-muted);">${a.role}</div>` : ''}
+              ${a.notes ? `<div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px; font-style: italic;">${a.notes}</div>` : ''}
+            </div>
+            <span class="stage-badge ${sc}" style="flex-shrink: 0;">${a.stage}</span>
+          </div>`;
+        } else {
+          html += `<div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px;">
+            <i class="ph-bold ph-check-square" style="color: var(--success); margin-top: 2px;"></i>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 500; margin-bottom: 2px;">${a.description}</div>
+              ${a.notes ? `<div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px; font-style: italic;">${a.notes}</div>` : ''}
+            </div>
+            <span style="font-size: 0.75rem; padding: 4px 8px; background: var(--success-light); color: var(--success); border-radius: 4px; flex-shrink: 0;">Task</span>
+          </div>`;
+        }
+      });
+      
+      html += '</div>';
+    });
+  }
+  
+  content.innerHTML = html;
+  modal.classList.add('active');
+  document.body.classList.add('log-modal-open');
+}
+
+function closeWeeklyLogModal() {
+  document.getElementById('weekly-log-modal').classList.remove('active');
+  document.body.classList.remove('log-modal-open');
+}
+
 // Filters
 function setFilter(newStage) {
   state.filters.stage = newStage;
@@ -1956,11 +2172,11 @@ function openLogModal(tab = 'application', companyId = null, applicationId = nul
   // Reset forms
   document.getElementById('entry-id').value = '';
   document.getElementById('entry-company').value = '';
-  document.getElementById('entry-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('entry-date').value = new Date().toISOString().slice(0, 16);
   document.getElementById('entry-stage').value = 'Applied';
   document.getElementById('entry-role').value = '';
   document.getElementById('entry-notes').value = '';
-  document.getElementById('task-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('task-date').value = new Date().toISOString().slice(0, 16);
   document.getElementById('task-description').value = '';
   document.getElementById('task-notes').value = '';
   document.getElementById('delete-btn').style.display = 'none';
@@ -2141,7 +2357,7 @@ async function showCompanyHistory(companyId) {
   document.getElementById('history-company-name').textContent = company.name;
   document.getElementById('history-current-stage').innerHTML = 
     `<span class="stage-badge ${currentStage.toLowerCase().replace(' ', '')}">${currentStage}</span>
-     <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 8px;">as of ${latest.date}</span>`;
+     <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 8px;">as of ${formatDateStr(latest.date)}</span>`;
   
   // Show company note at top of history if exists
   const companyNote = company.notes || '';
@@ -2151,7 +2367,7 @@ async function showCompanyHistory(companyId) {
     <div class="history-entry">
       <div class="history-entry-header">
         <span class="stage-badge ${a.stage.toLowerCase().replace(' ', '')}">${a.stage}</span>
-        <span class="history-entry-date">${a.date}</span>
+        <span class="history-entry-date">${formatDateStr(a.date)}</span>
       </div>
       <div class="history-entry-role">${a.role || '—'}</div>
       ${a.notes ? `<div class="history-entry-notes">${a.notes}</div>` : ''}
@@ -2260,7 +2476,22 @@ async function importFromFile(file) {
     alert('Invalid JSON file.');
     return;
   }
-  if (!confirm('Import will replace all current data. Continue?')) return;
+  
+  // Auto-backup if there's existing data
+  const existingCompanies = await Data.getCompanies();
+  const existingApps = await Data.getApplications();
+  if (existingCompanies.length > 0 || existingApps.length > 0) {
+    const backup = await Data.exportAll();
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `job-tracker-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  
+  if (!confirm('Import will replace all current data (backup downloaded). Continue?')) return;
   await Data.importAll(data);
   await renderAll();
   alert('Import complete!');
@@ -2319,6 +2550,7 @@ document.addEventListener('keydown', (e) => {
     closeLogModal();
     closeHistoryModal();
     closeCompanyNoteModal();
+    closeWeeklyLogModal();
   }
 });
 
@@ -2328,6 +2560,7 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     if (overlay.id === 'log-modal') closeLogModal();
     else if (overlay.id === 'history-modal') closeHistoryModal();
     else if (overlay.id === 'company-note-modal') closeCompanyNoteModal();
+    else if (overlay.id === 'weekly-log-modal') closeWeeklyLogModal();
     else overlay.classList.remove('active');
   });
 });
