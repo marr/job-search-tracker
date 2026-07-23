@@ -430,11 +430,67 @@ body.log-modal-open { overflow: hidden; }
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.task-pill:hover {
+  background: var(--primary);
+  color: white;
 }
 
 .task-pill.standalone {
   background: var(--gray-light);
   color: var(--text-muted);
+}
+
+.task-pill.standalone:hover {
+  background: var(--text-muted);
+  color: white;
+}
+
+.week-detail-tasks {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  display: none;
+}
+
+.week-detail-tasks.expanded {
+  display: block;
+}
+
+.week-detail-task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 0.75rem;
+}
+
+.week-detail-task-name {
+  color: var(--text);
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.week-detail-task-date {
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+.week-expand-hint {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 4px;
+  opacity: 0.7;
 }
 
 .week-detail-status {
@@ -1245,7 +1301,7 @@ tr.notes-row td.date-cell {
         </div>
         <div class="form-group">
           <label>Date *</label>
-          <input type="date" id="entry-date" required>
+          <input type="datetime-local" id="entry-date" required>
         </div>
         <div class="form-group">
           <label>Stage</label>
@@ -1272,7 +1328,7 @@ tr.notes-row td.date-cell {
       <div class="log-form" id="form-task" style="display: none;">
         <div class="form-group">
           <label>Date *</label>
-          <input type="date" id="task-date" required>
+          <input type="datetime-local" id="task-date" required>
         </div>
         <div class="form-group">
           <label>Description *</label>
@@ -1332,9 +1388,6 @@ tr.notes-row td.date-cell {
       <!-- Content populated by JS -->
     </div>
     <div class="modal-footer">
-      <div class="modal-footer-left">
-        <button class="btn btn-secondary" onclick="printWeeklyLog()"><i class="ph-bold ph-printer"></i> Print</button>
-      </div>
       <div class="modal-footer-right">
         <button class="btn btn-secondary" onclick="closeWeeklyLogModal()">Close</button>
       </div>
@@ -1776,14 +1829,30 @@ function renderWeekSummary(containerId, weekNum, isCurrent) {
     dots += `<span class="progress-dot ${filled ? 'filled' : ''}"><i class="ph-bold ${filled ? 'ph-check-circle' : 'ph-circle'}"></i></span>`;
   }
 
-  // Task list (compact)
-  let taskList = '';
+  // Task pills (compact, clickable)
+  let taskPills = '';
+  let taskDetails = '';
   if (totalTasks > 0) {
     const items = [
-      ...jobTasks.map(a => `<span class="task-pill">${a.companyName}</span>`),
-      ...standaloneTasks.map(t => `<span class="task-pill standalone">${t.description}</span>`)
+      ...jobTasks.map(a => `<span class="task-pill" onclick="toggleWeekDetails('${containerId}')">${a.companyName}</span>`),
+      ...standaloneTasks.map(t => `<span class="task-pill standalone" onclick="toggleWeekDetails('${containerId}')">${t.description}</span>`)
     ];
-    taskList = `<div class="task-pills">${items.join('')}</div>`;
+    taskPills = `<div class="task-pills">${items.join('')}</div>`;
+
+    // Detail list with dates
+    const allTasks = [
+      ...jobTasks.map(a => ({ name: a.companyName, date: a.date, type: 'job' })),
+      ...standaloneTasks.map(t => ({ name: t.description, date: t.date, type: 'task' }))
+    ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    taskDetails = `<div class="week-detail-tasks" id="week-details-${containerId}">
+      ${allTasks.map(t => `
+        <div class="week-detail-task-item">
+          <span class="week-detail-task-name">${t.name}</span>
+          <span class="week-detail-task-date">${formatDateStr(t.date)}</span>
+        </div>
+      `).join('')}
+    </div>`;
   }
 
   container.innerHTML = `
@@ -1793,9 +1862,22 @@ function renderWeekSummary(containerId, weekNum, isCurrent) {
         <span class="week-summary-count">${count}/3</span>
       </div>
       <div class="week-summary-status ${statusClass}">${statusText}</div>
-      ${taskList}
+      ${taskPills}
+      ${taskDetails}
+      ${totalTasks > 0 ? '<div class="week-expand-hint">click to ' + `<span id="week-hint-${containerId}">show</span>` + ' dates</div>' : ''}
     </div>
   `;
+}
+
+function toggleWeekDetails(containerId) {
+  const details = document.getElementById(`week-details-${containerId}`);
+  const hint = document.getElementById(`week-hint-${containerId}`);
+  if (details) {
+    details.classList.toggle('expanded');
+    if (hint) {
+      hint.textContent = details.classList.contains('expanded') ? 'hide' : 'show';
+    }
+  }
 }
 
 function renderWeekDetailContent(weekNum) {
@@ -1825,7 +1907,7 @@ function renderWeekDetailContent(weekNum) {
       <div class="week-task-info">
         <div class="week-task-company">${a.companyName}</div>
         <div class="week-task-role">${a.role || ''}</div>
-        <div class="week-task-date">${a.date}</div>
+        <div class="week-task-date">${formatDateStr(a.date)}</div>
       </div>
       <span class="week-task-stage ${sc}">${a.stage}</span>
     </div>`;
@@ -1836,7 +1918,7 @@ function renderWeekDetailContent(weekNum) {
       <span class="week-task-icon"><i class="ph-bold ph-pencil-simple"></i></span>
       <div class="week-task-info">
         <div class="week-standalone-desc">${t.description}</div>
-        <div class="week-task-date">${t.date}</div>
+        <div class="week-task-date">${formatDateStr(t.date)}</div>
       </div>
     </div>`;
   });
@@ -1846,8 +1928,14 @@ function renderWeekDetailContent(weekNum) {
 
 function formatDateStr(dateStr) {
   if (!dateStr || dateStr === '—') return '—';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  // Handle both date-only (YYYY-MM-DD) and datetime (YYYY-MM-DDTHH:MM) formats
+  const d = dateStr.includes('T') ? new Date(dateStr) : new Date(dateStr + 'T00:00:00');
+  const hasTime = dateStr.includes('T');
+  return d.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric',
+    ...(hasTime ? { hour: 'numeric', minute: '2-digit' } : {}) 
+  });
 }
 
 function toggleNotes(appId) {
@@ -2053,81 +2141,6 @@ function closeWeeklyLogModal() {
   document.body.classList.remove('log-modal-open');
 }
 
-function printWeeklyLog() {
-  const content = document.getElementById('weekly-log-content').innerHTML;
-  const week = state.currentWeek;
-  const count = getWeeklyTaskCount(week.week);
-  
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Weekly Activity Log - Week ${week.week}</title>
-      <style>
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          padding: 20px;
-          color: #1a1a1a;
-          line-height: 1.5;
-        }
-        h1 { font-size: 1.5rem; margin-bottom: 4px; }
-        .subtitle { color: #666; margin-bottom: 20px; }
-        .status { padding: 12px; background: #f5f5f5; border-radius: 4px; margin-bottom: 20px; }
-        .date-header { font-weight: 600; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
-        .activity {
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-          padding: 12px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          margin-bottom: 8px;
-        }
-        .activity-icon { width: 20px; text-align: center; }
-        .activity-content { flex: 1; }
-        .activity-title { font-weight: 500; }
-        .activity-detail { font-size: 0.9rem; color: #666; }
-        .activity-notes { font-size: 0.85rem; color: #666; font-style: italic; margin-top: 4px; }
-        .badge {
-          display: inline-block;
-          padding: 2px 8px;
-          border-radius: 12px;
-          font-size: 0.75rem;
-          font-weight: 500;
-        }
-        .badge-networking { background: #e9ecef; color: #666; }
-        .badge-applied { background: #e8f4f8; color: #205ea6; }
-        .badge-interviewing { background: #fff3cd; color: #856404; }
-        .badge-offer { background: #d4edda; color: #155724; }
-        .badge-nohire { background: #f8d7da; color: #721c24; }
-        .badge-task { background: #d4edda; color: #155724; }
-        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 0.85rem; color: #666; }
-        @media print {
-          body { padding: 0; }
-          .activity { break-inside: avoid; }
-        }
-      </style>
-    </head>
-    <body>
-      <h1>Job Search Activity Log</h1>
-      <div class="subtitle">Week ${week.week} — ${formatDate(week.monday)} – ${formatDate(week.sunday)}</div>
-      <div class="status">
-        <strong>Weekly Status:</strong> ${count}/3 activities logged
-        ${count >= 3 ? ' ✓ Meets Requirement' : ` — ${3 - count} more needed`}
-      </div>
-      ${content}
-      <div class="footer">
-        Generated on ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
-        Job Search Tracker
-      </div>
-    </body>
-    </html>
-  `);
-  printWindow.document.close();
-  printWindow.print();
-}
-
 // Filters
 function setFilter(newStage) {
   state.filters.stage = newStage;
@@ -2159,11 +2172,11 @@ function openLogModal(tab = 'application', companyId = null, applicationId = nul
   // Reset forms
   document.getElementById('entry-id').value = '';
   document.getElementById('entry-company').value = '';
-  document.getElementById('entry-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('entry-date').value = new Date().toISOString().slice(0, 16);
   document.getElementById('entry-stage').value = 'Applied';
   document.getElementById('entry-role').value = '';
   document.getElementById('entry-notes').value = '';
-  document.getElementById('task-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('task-date').value = new Date().toISOString().slice(0, 16);
   document.getElementById('task-description').value = '';
   document.getElementById('task-notes').value = '';
   document.getElementById('delete-btn').style.display = 'none';
@@ -2344,7 +2357,7 @@ async function showCompanyHistory(companyId) {
   document.getElementById('history-company-name').textContent = company.name;
   document.getElementById('history-current-stage').innerHTML = 
     `<span class="stage-badge ${currentStage.toLowerCase().replace(' ', '')}">${currentStage}</span>
-     <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 8px;">as of ${latest.date}</span>`;
+     <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 8px;">as of ${formatDateStr(latest.date)}</span>`;
   
   // Show company note at top of history if exists
   const companyNote = company.notes || '';
@@ -2354,7 +2367,7 @@ async function showCompanyHistory(companyId) {
     <div class="history-entry">
       <div class="history-entry-header">
         <span class="stage-badge ${a.stage.toLowerCase().replace(' ', '')}">${a.stage}</span>
-        <span class="history-entry-date">${a.date}</span>
+        <span class="history-entry-date">${formatDateStr(a.date)}</span>
       </div>
       <div class="history-entry-role">${a.role || '—'}</div>
       ${a.notes ? `<div class="history-entry-notes">${a.notes}</div>` : ''}
