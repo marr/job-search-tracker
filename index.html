@@ -1819,27 +1819,12 @@ function renderWeekSummary(containerId, weekNum, isCurrent) {
 
   // Task pills (compact)
   let taskPills = '';
-  let taskDetails = '';
   if (totalTasks > 0) {
     const items = [
       ...jobTasks.map(a => `<span class="task-pill">${a.companyName}</span>`),
       ...standaloneTasks.map(t => `<span class="task-pill standalone">${t.description}</span>`)
     ];
     taskPills = `<div class="task-pills">${items.join('')}</div>`;
-
-    // Detail list (no dates)
-    const allTasks = [
-      ...jobTasks.map(a => ({ name: a.companyName, type: 'job' })),
-      ...standaloneTasks.map(t => ({ name: t.description, type: 'task' }))
-    ];
-
-    taskDetails = `<div class="week-detail-tasks" id="week-details-${containerId}">
-      ${allTasks.map(t => `
-        <div class="week-detail-task-item">
-          <span class="week-detail-task-name">${t.name}</span>
-        </div>
-      `).join('')}
-    </div>`;
   }
 
   container.innerHTML = `
@@ -1850,7 +1835,6 @@ function renderWeekSummary(containerId, weekNum, isCurrent) {
       </div>
       <div class="week-summary-status ${statusClass}">${statusText}</div>
       ${taskPills}
-      ${taskDetails}
     </div>
   `;
 }
