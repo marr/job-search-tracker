@@ -1827,17 +1827,16 @@ function renderWeekSummary(containerId, weekNum, isCurrent) {
     ];
     taskPills = `<div class="task-pills">${items.join('')}</div>`;
 
-    // Detail list with dates
+    // Detail list (no dates)
     const allTasks = [
-      ...jobTasks.map(a => ({ name: a.companyName, date: a.date, type: 'job' })),
-      ...standaloneTasks.map(t => ({ name: t.description, date: t.date, type: 'task' }))
-    ].sort((a, b) => new Date(b.date) - new Date(a.date));
+      ...jobTasks.map(a => ({ name: a.companyName, type: 'job' })),
+      ...standaloneTasks.map(t => ({ name: t.description, type: 'task' }))
+    ];
 
     taskDetails = `<div class="week-detail-tasks" id="week-details-${containerId}">
       ${allTasks.map(t => `
         <div class="week-detail-task-item">
           <span class="week-detail-task-name">${t.name}</span>
-          <span class="week-detail-task-date">${formatDateStr(t.date)}</span>
         </div>
       `).join('')}
     </div>`;
@@ -2386,8 +2385,16 @@ async function deleteWeeklyActivity(type, id) {
   if (!confirm('Delete this activity?')) return;
   if (type === 'application') {
     await Data.deleteApplication(id);
+    // Remove from local state immediately so modal re-renders correctly
+    for (const cv of state.companyView) {
+      const idx = cv.applications.findIndex(a => a.id === id);
+      if (idx !== -1) { cv.applications.splice(idx, 1); break; }
+    }
+    // Drop companies with no remaining applications
+    state.companyView = state.companyView.filter(cv => cv.applications.length > 0);
   } else {
     await Data.deleteWeeklyTask(id);
+    state.weeklyTasks = state.weeklyTasks.filter(t => t.id !== id);
   }
   openWeeklyLogModal(); // Refresh the modal
   await renderAll();
