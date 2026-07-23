@@ -453,11 +453,6 @@ body.log-modal-open { overflow: hidden; }
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--border);
-  display: none;
-}
-
-.week-detail-tasks.expanded {
-  display: block;
 }
 
 .week-detail-task-item {
@@ -485,13 +480,6 @@ body.log-modal-open { overflow: hidden; }
   white-space: nowrap;
 }
 
-.week-expand-hint {
-  font-size: 0.625rem;
-  color: var(--text-muted);
-  text-align: center;
-  margin-top: 4px;
-  opacity: 0.7;
-}
 
 .week-detail-status {
   font-size: 0.75rem;
@@ -1829,13 +1817,13 @@ function renderWeekSummary(containerId, weekNum, isCurrent) {
     dots += `<span class="progress-dot ${filled ? 'filled' : ''}"><i class="ph-bold ${filled ? 'ph-check-circle' : 'ph-circle'}"></i></span>`;
   }
 
-  // Task pills (compact, clickable)
+  // Task pills (compact)
   let taskPills = '';
   let taskDetails = '';
   if (totalTasks > 0) {
     const items = [
-      ...jobTasks.map(a => `<span class="task-pill" onclick="toggleWeekDetails('${containerId}')">${a.companyName}</span>`),
-      ...standaloneTasks.map(t => `<span class="task-pill standalone" onclick="toggleWeekDetails('${containerId}')">${t.description}</span>`)
+      ...jobTasks.map(a => `<span class="task-pill">${a.companyName}</span>`),
+      ...standaloneTasks.map(t => `<span class="task-pill standalone">${t.description}</span>`)
     ];
     taskPills = `<div class="task-pills">${items.join('')}</div>`;
 
@@ -1864,20 +1852,8 @@ function renderWeekSummary(containerId, weekNum, isCurrent) {
       <div class="week-summary-status ${statusClass}">${statusText}</div>
       ${taskPills}
       ${taskDetails}
-      ${totalTasks > 0 ? '<div class="week-expand-hint">click to ' + `<span id="week-hint-${containerId}">show</span>` + ' dates</div>' : ''}
     </div>
   `;
-}
-
-function toggleWeekDetails(containerId) {
-  const details = document.getElementById(`week-details-${containerId}`);
-  const hint = document.getElementById(`week-hint-${containerId}`);
-  if (details) {
-    details.classList.toggle('expanded');
-    if (hint) {
-      hint.textContent = details.classList.contains('expanded') ? 'hide' : 'show';
-    }
-  }
 }
 
 function renderWeekDetailContent(weekNum) {
@@ -2114,6 +2090,7 @@ function openWeeklyLogModal() {
               ${a.notes ? `<div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px; font-style: italic;">${a.notes}</div>` : ''}
             </div>
             <span class="stage-badge ${sc}" style="flex-shrink: 0;">${a.stage}</span>
+            <button class="btn-icon" onclick="deleteWeeklyActivity('application', ${a.id})" title="Delete" style="color: var(--text-muted); flex-shrink: 0; margin-left: 4px;"><i class="ph-bold ph-trash"></i></button>
           </div>`;
         } else {
           html += `<div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px;">
@@ -2123,6 +2100,7 @@ function openWeeklyLogModal() {
               ${a.notes ? `<div style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px; font-style: italic;">${a.notes}</div>` : ''}
             </div>
             <span style="font-size: 0.75rem; padding: 4px 8px; background: var(--success-light); color: var(--success); border-radius: 4px; flex-shrink: 0;">Task</span>
+            <button class="btn-icon" onclick="deleteWeeklyActivity('task', ${a.id})" title="Delete" style="color: var(--text-muted); flex-shrink: 0; margin-left: 4px;"><i class="ph-bold ph-trash"></i></button>
           </div>`;
         }
       });
@@ -2401,6 +2379,17 @@ async function deleteApplication(id) {
   if (!confirm('Delete this application?')) return;
   await Data.deleteApplication(id);
   if (currentHistoryCompanyId) await showCompanyHistory(currentHistoryCompanyId);
+  await renderAll();
+}
+
+async function deleteWeeklyActivity(type, id) {
+  if (!confirm('Delete this activity?')) return;
+  if (type === 'application') {
+    await Data.deleteApplication(id);
+  } else {
+    await Data.deleteWeeklyTask(id);
+  }
+  openWeeklyLogModal(); // Refresh the modal
   await renderAll();
 }
 
